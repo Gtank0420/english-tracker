@@ -1,0 +1,714 @@
+{
+  "version": 1,
+  "title": "入省までの英語力強化プラン",
+  "timezone": "Asia/Tokyo",
+  "dayBoundaryHour": 3,
+  "period": { "start": "2026-10-10", "end": "2027-03-31" },
+
+  "skills": [
+    { "id": "vocab", "name": "単語", "color": "#3E6E8E" },
+    { "id": "listening", "name": "リスニング", "color": "#4F8A6B" },
+    { "id": "speaking", "name": "スピーキング", "color": "#C0703A" },
+    { "id": "policy", "name": "政策英語", "color": "#7A5C99" },
+    { "id": "fun", "name": "楽しみ枠", "color": "#B8921E" },
+    { "id": "toefl", "name": "TOEFL", "color": "#A64B4B" }
+  ],
+
+  "phases": [
+    {
+      "id": "p1",
+      "name": "再起動期",
+      "start": "2026-10-10",
+      "end": "2026-11-08",
+      "focus": "診断と習慣化",
+      "description": "実力を診断し、単語と精聴を毎日の習慣に戻す。毎日1分スピーチを録音する。"
+    },
+    {
+      "id": "p2",
+      "name": "強化期",
+      "start": "2026-11-09",
+      "end": "2027-02-07",
+      "focus": "語彙、政策英語、英会話週2回",
+      "description": "語彙を積み上げ、政策英語を聞く・読む。オンライン英会話を週2回入れる。"
+    },
+    {
+      "id": "p3",
+      "name": "仕上げ期",
+      "start": "2027-02-08",
+      "end": "2027-03-31",
+      "focus": "TOEFL新形式の体験と公式模試",
+      "description": "TOEFLの新形式を一通り体験し、3月の公式模試で総合4.0相当を確かめる。"
+    }
+  ],
+
+  "markRules": {
+    "circle": "その日の最低ライン3項目をすべて終えた、または終えたタスクの合計が20分以上",
+    "doubleCircle": "その日の標準タスク (optional: true を除く) をすべて終えた",
+    "weekTargetDays": 5,
+    "weekStartsOn": "mon",
+    "note": "未達の日は何も表示しない (赤くしない、責める文言を出さない)"
+  },
+
+  "minimumTasks": [
+    { "id": "min-vocab", "label": "単語の見直し", "minutes": 10, "skill": "vocab", "menuId": "m1" },
+    { "id": "min-repeat", "label": "前日の素材から5文リピート", "minutes": 5, "skill": "listening", "menuId": "m3" },
+    { "id": "min-record", "label": "1分スピーチを録音", "minutes": 5, "skill": "speaking", "menuId": "m4" }
+  ],
+
+  "menus": [
+    {
+      "id": "m1",
+      "no": 1,
+      "name": "単語",
+      "skill": "vocab",
+      "defaultMinutes": 15,
+      "when": "毎日15分。時間と場所は自由",
+      "summary": "TOEFL向け単語帳を、開始Rankから毎日少しずつ進める。",
+      "steps": [
+        "新出は平日に20語。見出し語を見て2秒で意味が出るか判定する",
+        "出ない語は音声を聞いて口に出し、第一義だけ覚える (1語10秒まで)",
+        "翌日・3日後・1週間後に見直す",
+        "3回目でも出ない語だけ、例文ごと音読する"
+      ],
+      "target": "標準ペースは Rank 2 を12/20ごろ、Rank 3 を2月末に終え、3月は総復習。開始Rankは診断で決める。",
+      "materialIds": ["mat-3800"],
+      "copyTextIds": []
+    },
+    {
+      "id": "m2",
+      "no": 2,
+      "name": "自分用の単語帳",
+      "skill": "vocab",
+      "defaultMinutes": 5,
+      "when": "夜5分。強化期から",
+      "summary": "教材や会話で出会った語句を、出会った1文ごと保存して復習する。",
+      "steps": [
+        "精聴、政策英語、会話、動画で出会った語句を、出会った1文ごと保存する (1日5枚まで)",
+        "表は原文、裏は意味と自作の短文にする",
+        "動詞と名詞の組 (allocate spectrum など) や、政策の定型表現を優先する"
+      ],
+      "materialIds": ["mat-ankidroid"],
+      "copyTextIds": []
+    },
+    {
+      "id": "m3",
+      "no": 3,
+      "name": "精聴とシャドーイング",
+      "skill": "listening",
+      "defaultMinutes": 25,
+      "when": "25分。机で",
+      "summary": "2〜3分の音声を、聞き取れない理由まで分解してから口に出す。同じ素材を2日使う。",
+      "steps": [
+        "2〜3分の音声を字幕なしで2回聞く",
+        "原稿を見ながら聞き、聞き取れない箇所に印をつける",
+        "聞き取れない理由を「単語」「音のつながり」「速さ」に分ける",
+        "原稿を見ながら音声に重ねて3回読む (オーバーラッピング)",
+        "原稿なしでシャドーイングを3回",
+        "最後に字幕なしで聞き直す"
+      ],
+      "busyDay": "最低ラインの日は、前日の素材から5文だけリピートする (5分)",
+      "materialIds": ["mat-nhk", "mat-techlife", "mat-aiforgood"],
+      "materialNote": "素材はレベル表で選ぶ。原稿がない回は Android の自動字幕かAIの書き起こしで代用する。",
+      "copyTextIds": []
+    },
+    {
+      "id": "m4",
+      "no": 4,
+      "name": "1分スピーチ録音",
+      "skill": "speaking",
+      "defaultMinutes": 20,
+      "when": "5〜20分。自宅で",
+      "summary": "60秒で話して録音し、AIに直してもらって録り直す。",
+      "steps": [
+        "言いたい要点を3つ、30秒でメモする",
+        "60秒で話して録音する",
+        "AIに書き起こしと修正を頼む (意味を変えずに自然な英語にし、直した理由を3つ)",
+        "修正版を2回音読して、もう一度録音する"
+      ],
+      "questionTypes": ["経験", "意見", "専門外の人への説明", "ニュースの要約と意見"],
+      "busyDay": "最低ラインの日は録るだけでよい (5分)",
+      "materialIds": ["mat-ai"],
+      "copyTextIds": ["baseline-1", "baseline-2", "baseline-3", "speech-fix"]
+    },
+    {
+      "id": "m5",
+      "no": 5,
+      "name": "AI会話",
+      "skill": "speaking",
+      "defaultMinutes": 20,
+      "when": "20分。自宅で",
+      "summary": "AIの音声会話で、訂正なしで話し続け、最後にまとめて直しをもらう。",
+      "steps": [
+        "指示文をコピーしてAIに最初に渡す",
+        "会話中は訂正させずに話し続ける",
+        "最後に feedback と言って、直しを3つ受け取る",
+        "直された文を自分用の単語帳に入れる"
+      ],
+      "topicsByPhase": {
+        "p1": "自己紹介や大学生活など身近なこと",
+        "p2": "水曜に読んだ政策ニュースについての議論",
+        "p3": "準備なしの即答 (TOEFL の面接形式)"
+      },
+      "materialIds": ["mat-ai"],
+      "copyTextIds": ["ai-prompt", "toefl-interview-prompt"]
+    },
+    {
+      "id": "m6",
+      "no": 6,
+      "name": "オンライン英会話",
+      "skill": "speaking",
+      "defaultMinutes": 25,
+      "when": "25分 + 予習5分・復習15分。強化期から火・金",
+      "summary": "読んだ記事と自分の意見を持ち込み、講師と議論する。",
+      "steps": [
+        "予習5分: 水曜に読んだ記事と、自分の意見を英語3文で用意する",
+        "最初の5分は近況、残り20分は持ち込んだ記事の議論",
+        "講師に依頼文を伝える (コピーボタン)",
+        "復習: 言えなかった表現を3つ書き出し、正しい言い方を単語帳に入れる",
+        "講師は2〜3人に固定し、前回の続きから始められるようにする"
+      ],
+      "materialIds": ["mat-dmm"],
+      "copyTextIds": ["eikaiwa-request"]
+    },
+    {
+      "id": "m7",
+      "no": 7,
+      "name": "政策英語",
+      "skill": "policy",
+      "defaultMinutes": 20,
+      "when": "20分。火・水・木",
+      "summary": "総務省や国際機関の英語ページを読み、3文に要約して声に出す。",
+      "steps": [
+        "見出しを5本流し読みして、1本を選ぶ",
+        "1本を精読し、段落ごとに要点を英語1行でメモする",
+        "「何が起きたか・なぜ重要か・自分の意見」の3文に要約する",
+        "要約を声に出して読み、翌日の会話の題材にする"
+      ],
+      "tip": "日本語版がある資料は英語を先に読み、答え合わせで行政用語の英訳を拾う。",
+      "materialIds": ["mat-mic", "mat-hiroshima", "mat-aiforgood"],
+      "copyTextIds": []
+    },
+    {
+      "id": "m8",
+      "no": 8,
+      "name": "楽しみ枠",
+      "skill": "fun",
+      "defaultMinutes": 30,
+      "when": "学習時間の外。週末や寝る前に20〜60分",
+      "summary": "Netflix や YouTube を英語音声と英語字幕で楽しむ。同じシリーズを続けて見ると語彙が定着しやすい。",
+      "steps": [
+        "英語音声と英語字幕で見る",
+        "同じシリーズを続けて見る",
+        "止めて調べるのは1本に2回まで",
+        "気に入った表現を1つだけ単語帳に入れる",
+        "英語字幕で半分も分からない作品は、1回目を日本語字幕、2回目を英語字幕にする"
+      ],
+      "evidence": "英語の番組を1本見るだけで知らない語の1割前後、同じシリーズを10話続けて見ると2〜3割を覚えたという研究がある (Peters & Webb 2018 ほか)。",
+      "materialIds": ["mat-netflix", "mat-ted", "mat-kurzgesagt", "mat-johnnyharris", "mat-rachel"],
+      "copyTextIds": []
+    },
+    {
+      "id": "m9",
+      "no": 9,
+      "name": "TOEFL形式の演習",
+      "skill": "toefl",
+      "defaultMinutes": 20,
+      "when": "仕上げ期。月・水・木に20〜30分",
+      "summary": "新形式の全問題タイプを最低3回ずつ解く。Writing は AI に直してもらう。",
+      "steps": [
+        "新形式の全タイプを最低3回ずつ解く (Complete the Words、Build a Sentence、Take an Interview は特に)",
+        "Writing は書いたものを AI に直してもらう",
+        "模試は 2/13 と 3/13 の土曜に通しで受ける"
+      ],
+      "materialIds": ["mat-testready", "mat-official-japanese", "mat-official-guide"],
+      "copyTextIds": ["toefl-interview-prompt"]
+    }
+  ],
+
+  "schedule": {
+    "p1": {
+      "mon": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "listening", "menuId": "m3", "label": "精聴とシャドーイング", "minutes": 25 },
+        { "id": "speech", "menuId": "m4", "label": "1分スピーチ録音", "minutes": 20 }
+      ],
+      "tue": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "listening", "menuId": "m3", "label": "精聴とシャドーイング", "minutes": 25 },
+        { "id": "policy", "menuId": "m7", "label": "政策英語", "minutes": 20 }
+      ],
+      "wed": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "listening", "menuId": "m3", "label": "精聴とシャドーイング", "minutes": 25 },
+        { "id": "ai", "menuId": "m5", "label": "AI会話", "minutes": 20 }
+      ],
+      "thu": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "listening", "menuId": "m3", "label": "精聴とシャドーイング", "minutes": 25 },
+        { "id": "policy", "menuId": "m7", "label": "政策英語", "minutes": 20 }
+      ],
+      "fri": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "listening", "menuId": "m3", "label": "精聴とシャドーイング", "minutes": 25 },
+        { "id": "ai", "menuId": "m5", "label": "AI会話", "minutes": 20 }
+      ],
+      "sat": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "long-listening", "menuId": "m3", "label": "長めの音声を1本 (レベル表の素材)", "minutes": 30 },
+        { "id": "summary-speech", "menuId": "m4", "label": "要約を録音", "minutes": 15 },
+        { "id": "fun", "menuId": "m8", "label": "楽しみ枠 (Netflix・YouTube)", "minutes": 30, "optional": true }
+      ],
+      "sun": [
+        { "id": "vocab-review", "menuId": "m1", "label": "単語の見直し", "minutes": 10 },
+        { "id": "weekly-review", "menuId": null, "label": "振り返り (1週間の録音を聞き直し、翌週の素材を選ぶ)", "minutes": 20 },
+        { "id": "fun", "menuId": "m8", "label": "楽しみ枠 (Netflix・YouTube)", "minutes": 30, "optional": true }
+      ]
+    },
+    "p2": {
+      "mon": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "listening", "menuId": "m3", "label": "精聴とシャドーイング", "minutes": 25 },
+        { "id": "speech", "menuId": "m4", "label": "1分スピーチ録音", "minutes": 20 },
+        { "id": "my-deck", "menuId": "m2", "label": "自分用の単語帳", "minutes": 5, "optional": true }
+      ],
+      "tue": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "eikaiwa", "menuId": "m6", "label": "オンライン英会話", "minutes": 25 },
+        { "id": "eikaiwa-prep-review", "menuId": "m6", "label": "英会話の予習・復習", "minutes": 20 },
+        { "id": "my-deck", "menuId": "m2", "label": "自分用の単語帳", "minutes": 5, "optional": true }
+      ],
+      "wed": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "listening", "menuId": "m3", "label": "精聴とシャドーイング", "minutes": 25 },
+        { "id": "policy", "menuId": "m7", "label": "政策英語", "minutes": 20 },
+        { "id": "my-deck", "menuId": "m2", "label": "自分用の単語帳", "minutes": 5, "optional": true }
+      ],
+      "thu": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "listening", "menuId": "m3", "label": "精聴とシャドーイング", "minutes": 25 },
+        { "id": "ai", "menuId": "m5", "label": "AI会話 (水曜の記事で議論)", "minutes": 20 },
+        { "id": "my-deck", "menuId": "m2", "label": "自分用の単語帳", "minutes": 5, "optional": true }
+      ],
+      "fri": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "eikaiwa", "menuId": "m6", "label": "オンライン英会話 (水曜の記事を持参)", "minutes": 25 },
+        { "id": "eikaiwa-prep-review", "menuId": "m6", "label": "英会話の予習・復習", "minutes": 20 },
+        { "id": "my-deck", "menuId": "m2", "label": "自分用の単語帳", "minutes": 5, "optional": true }
+      ],
+      "sat": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "long-listening", "menuId": "m3", "label": "AI for Good の講演を1本", "minutes": 30 },
+        { "id": "summary-speech", "menuId": "m4", "label": "要約を録音", "minutes": 15 },
+        { "id": "fun", "menuId": "m8", "label": "楽しみ枠 (Netflix・YouTube)", "minutes": 30, "optional": true }
+      ],
+      "sun": [
+        { "id": "vocab-review", "menuId": "m1", "label": "単語の見直し", "minutes": 10 },
+        { "id": "weekly-review", "menuId": null, "label": "振り返り (1週間の録音を聞き直し、翌週の素材を選ぶ)", "minutes": 20 },
+        { "id": "fun", "menuId": "m8", "label": "楽しみ枠 (Netflix・YouTube)", "minutes": 30, "optional": true }
+      ]
+    },
+    "p3": {
+      "mon": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "toefl-reading", "menuId": "m9", "label": "TOEFL Reading 形式", "minutes": 20 },
+        { "id": "listening", "menuId": "m3", "label": "精聴とシャドーイング", "minutes": 25 }
+      ],
+      "tue": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "eikaiwa", "menuId": "m6", "label": "オンライン英会話 (模擬面接を依頼)", "minutes": 25 },
+        { "id": "eikaiwa-prep-review", "menuId": "m6", "label": "英会話の復習", "minutes": 20 }
+      ],
+      "wed": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "toefl-listening", "menuId": "m9", "label": "TOEFL Listening 形式", "minutes": 20 },
+        { "id": "listen-repeat", "menuId": "m9", "label": "Listen and Repeat", "minutes": 10 },
+        { "id": "interview", "menuId": "m5", "label": "面接形式 (Take an Interview)", "minutes": 15 }
+      ],
+      "thu": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "toefl-writing", "menuId": "m9", "label": "TOEFL Writing 形式", "minutes": 30 },
+        { "id": "writing-fix", "menuId": "m9", "label": "AI添削の反映", "minutes": 15 }
+      ],
+      "fri": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "eikaiwa", "menuId": "m6", "label": "オンライン英会話", "minutes": 25 },
+        { "id": "policy", "menuId": "m7", "label": "政策英語", "minutes": 20 }
+      ],
+      "sat": [
+        { "id": "vocab", "menuId": "m1", "label": "単語", "minutes": 15 },
+        { "id": "weak-practice", "menuId": "m9", "label": "弱い形式の演習", "minutes": 45, "replacedOnMockDay": true },
+        { "id": "fun", "menuId": "m8", "label": "楽しみ枠 (Netflix・YouTube)", "minutes": 30, "optional": true }
+      ],
+      "sun": [
+        { "id": "vocab-review", "menuId": "m1", "label": "単語の見直し", "minutes": 10 },
+        { "id": "weekly-review", "menuId": null, "label": "模試の見直しか振り返り", "minutes": 20 },
+        { "id": "fun", "menuId": "m8", "label": "楽しみ枠 (Netflix・YouTube)", "minutes": 30, "optional": true }
+      ]
+    }
+  },
+
+  "specialDays": [
+    {
+      "date": "2027-02-13",
+      "replaceTaskIds": ["weak-practice"],
+      "addTasks": [{ "id": "mock", "menuId": "m9", "label": "公式ガイドの模試1を通しで受ける", "minutes": 120 }]
+    },
+    {
+      "date": "2027-03-13",
+      "replaceTaskIds": ["weak-practice"],
+      "addTasks": [{ "id": "mock", "menuId": "m9", "label": "公式ガイドの模試2を通しで受ける", "minutes": 120 }]
+    }
+  ],
+
+  "materials": [
+    {
+      "id": "mat-3800",
+      "name": "TOEFLテスト英単語3800 (4訂版)",
+      "type": "book",
+      "publisher": "旺文社",
+      "skill": "vocab",
+      "purpose": "メインの単語帳。Rank 1〜4 の難易度別。電子書籍は Android 対応、音声は無料ダウンロード",
+      "cost": "約2,500円",
+      "url": "https://books.rakuten.co.jp/rk/a7626d34fc8237e080186a7d68e66de8/"
+    },
+    {
+      "id": "mat-ankidroid",
+      "name": "AnkiDroid",
+      "type": "app",
+      "skill": "vocab",
+      "purpose": "自分用の単語帳 (間隔をあけて自動で復習)",
+      "cost": "無料",
+      "url": "https://play.google.com/store/apps/details?id=com.ichi2.anki"
+    },
+    {
+      "id": "mat-nhk",
+      "name": "NHK WORLD-JAPAN English News",
+      "type": "podcast",
+      "skill": "listening",
+      "purpose": "精聴の素材 (初級)。日本の話題なので背景が分かりやすい。原稿は Web 記事",
+      "cost": "無料",
+      "url": "https://www3.nhk.or.jp/nhkworld/"
+    },
+    {
+      "id": "mat-techlife",
+      "name": "BBC World Service「Tech Life」",
+      "type": "podcast",
+      "skill": "listening",
+      "purpose": "精聴の素材 (中級)。週刊、約27分。2〜3分を切り出して使う",
+      "cost": "無料",
+      "url": "https://podcasts.apple.com/podcast/id802996636"
+    },
+    {
+      "id": "mat-aiforgood",
+      "name": "ITU AI for Good",
+      "type": "video",
+      "skill": "listening",
+      "purpose": "精聴と政策英語の素材 (上級)。国際機関の講演とパネル。YouTube の字幕を原稿代わりに",
+      "cost": "無料",
+      "url": "https://aiforgood.itu.int/"
+    },
+    {
+      "id": "mat-mic",
+      "name": "総務省 MIC ICT Policy (英語)",
+      "type": "website",
+      "skill": "policy",
+      "purpose": "情報通信政策の英語ページ。日本語版と見比べて行政用語の英訳を拾う",
+      "cost": "無料",
+      "url": "https://www.soumu.go.jp/main_sosiki/joho_tsusin/eng/index.html"
+    },
+    {
+      "id": "mat-hiroshima",
+      "name": "Hiroshima AI Process",
+      "type": "website",
+      "skill": "policy",
+      "purpose": "AIガバナンスの国際的な取り組みの英語サイト",
+      "cost": "無料",
+      "url": "https://www.soumu.go.jp/hiroshimaaiprocess/en/index.html"
+    },
+    {
+      "id": "mat-ai",
+      "name": "Claude アプリ / ChatGPT の音声会話",
+      "type": "ai",
+      "skill": "speaking",
+      "purpose": "AI会話と、録音の書き起こし・添削",
+      "cost": "使っているプランの範囲",
+      "url": null
+    },
+    {
+      "id": "mat-dmm",
+      "name": "DMM英会話 スタンダード 毎月8レッスン",
+      "type": "lesson",
+      "skill": "speaking",
+      "purpose": "週2回、25分のオンライン英会話",
+      "cost": "月4,880円 (2026年10月31日までの入会で初月1,220円。2回の自動更新が条件)",
+      "url": "https://eikaiwa.dmm.com/plan/"
+    },
+    {
+      "id": "mat-netflix",
+      "name": "Netflix 広告つきスタンダード",
+      "type": "video",
+      "skill": "fun",
+      "purpose": "楽しみ枠。The Diplomat (政府と外交)、Black Mirror (技術と社会)、技術や社会を扱うドキュメンタリー。配信作品は時期で変わる",
+      "cost": "月890円",
+      "url": "https://www.netflix.com/jp/"
+    },
+    {
+      "id": "mat-ted",
+      "name": "TED",
+      "type": "youtube",
+      "skill": "fun",
+      "purpose": "10〜18分の講演。英語字幕つき。講義形式と人前で説明する型の手本",
+      "cost": "無料",
+      "url": "https://www.youtube.com/@TED"
+    },
+    {
+      "id": "mat-kurzgesagt",
+      "name": "Kurzgesagt – In a Nutshell",
+      "type": "youtube",
+      "skill": "fun",
+      "purpose": "科学の話題を約10分で解説。ナレーションが明瞭",
+      "cost": "無料",
+      "url": "https://www.youtube.com/@kurzgesagt"
+    },
+    {
+      "id": "mat-johnnyharris",
+      "name": "Johnny Harris",
+      "type": "youtube",
+      "skill": "fun",
+      "purpose": "地政学や政策を地図と映像で解説",
+      "cost": "無料",
+      "url": "https://www.youtube.com/@johnnyharris"
+    },
+    {
+      "id": "mat-rachel",
+      "name": "Rachel's English",
+      "type": "youtube",
+      "skill": "fun",
+      "purpose": "音のつながりや弱く読む音の解説。精聴で「音のつながり」に分類した箇所の補強に",
+      "cost": "無料",
+      "url": "https://www.youtube.com/@rachelsenglish"
+    },
+    {
+      "id": "mat-testready",
+      "name": "TOEFL TestReady (ETS公式)",
+      "type": "website",
+      "skill": "toefl",
+      "purpose": "最初の診断に使う無料模試 (Free Practice Test、AI採点つき) と公式の練習問題",
+      "cost": "無料",
+      "url": "https://www.ets.org/toefl/prepare"
+    },
+    {
+      "id": "mat-official-japanese",
+      "name": "TOEFL iBT公式総合対策",
+      "type": "book",
+      "publisher": "旺文社",
+      "skill": "toefl",
+      "purpose": "新形式に対応した日本初の公式問題集。ETS作成の問題1セット。12/27の中間確認に使う",
+      "cost": "2,970円",
+      "url": "https://www.kinokuniya.co.jp/f/dsg-01-9784010934470"
+    },
+    {
+      "id": "mat-official-guide",
+      "name": "The Official Guide to the TOEFL iBT Test, Eighth Edition",
+      "type": "book",
+      "publisher": "McGraw Hill",
+      "skill": "toefl",
+      "purpose": "新形式の公式ガイド。模試2回分を 2/13 と 3/13 に使う",
+      "cost": "洋書。購入時に確認",
+      "url": "https://www.mheducation.com/highered/mhp/product/official-guide-toefl-ibt-test-eighth-edition.html"
+    }
+  ],
+
+  "levelTable": [
+    { "skill": "vocab", "condition": "Rank 1 の正答が80%未満", "action": "Rank 1 から始める。3月末に Rank 2 の途中でもよい", "match": [{ "checkpoint": "diag-vocab", "key": "rank1", "max": 80 }] },
+    { "skill": "vocab", "condition": "Rank 1 は80%以上、Rank 2 は80%未満", "action": "標準どおり Rank 2 → Rank 3", "match": [{ "checkpoint": "diag-vocab", "key": "rank1", "min": 80 }, { "checkpoint": "diag-vocab", "key": "rank2", "max": 80 }] },
+    { "skill": "vocab", "condition": "Rank 2 も80%以上", "action": "Rank 3 → Rank 4", "match": [{ "checkpoint": "diag-vocab", "key": "rank1", "min": 80 }, { "checkpoint": "diag-vocab", "key": "rank2", "min": 80 }] },
+    { "skill": "listening", "condition": "初見理解度が50%未満", "action": "NHK WORLD を続け、1回を約1分に縮める", "match": [{ "checkpoint": "diag-listening", "key": "comprehension", "max": 50 }] },
+    { "skill": "listening", "condition": "初見理解度が50〜70%", "action": "BBC Tech Life に上げる", "match": [{ "checkpoint": "diag-listening", "key": "comprehension", "min": 50, "max": 70 }] },
+    { "skill": "listening", "condition": "初見理解度が70%以上", "action": "AI for Good の講演やパネルに上げ、メモを取りながら聞く", "match": [{ "checkpoint": "diag-listening", "key": "comprehension", "min": 70 }] },
+    { "skill": "speaking", "condition": "60秒で60語未満", "action": "話す前に要点3つをメモしてよい。質問は経験や自己紹介が中心", "match": [{ "checkpointType": "recording", "key": "words", "max": 60 }] },
+    { "skill": "speaking", "condition": "60秒で60〜90語", "action": "意見の質問 (賛否 + 理由2つ) に移る", "match": [{ "checkpointType": "recording", "key": "words", "min": 60, "max": 90 }] },
+    { "skill": "speaking", "condition": "60秒で90語以上", "action": "メモなしの即答と、反論への応答に移る", "match": [{ "checkpointType": "recording", "key": "words", "min": 90 }] }
+  ],
+
+  "checkpoints": [
+    {
+      "id": "diag-toefl",
+      "date": "2026-10-11",
+      "type": "diagnosis",
+      "title": "TOEFL TestReady の無料模試で診断",
+      "howTo": "公式の無料模試を約2時間、通しで受ける",
+      "resultFields": [
+        { "key": "reading", "label": "Reading", "kind": "band" },
+        { "key": "listening", "label": "Listening", "kind": "band" },
+        { "key": "writing", "label": "Writing", "kind": "band" },
+        { "key": "speaking", "label": "Speaking", "kind": "band" },
+        { "key": "overall", "label": "総合", "kind": "band" }
+      ],
+      "onResult": "最も低い技能に強化期の時間を厚く配る"
+    },
+    {
+      "id": "diag-vocab",
+      "date": "2026-10-11",
+      "type": "diagnosis",
+      "title": "単語サンプルで開始Rankを決める",
+      "howTo": "Rank 1〜3 から各50語を選び、2秒以内に意味が言えるか判定する",
+      "resultFields": [
+        { "key": "rank1", "label": "Rank 1 の正答率 (%)", "kind": "percent" },
+        { "key": "rank2", "label": "Rank 2 の正答率 (%)", "kind": "percent" },
+        { "key": "rank3", "label": "Rank 3 の正答率 (%)", "kind": "percent" }
+      ],
+      "onResult": "レベル表で単語の開始Rankを決める"
+    },
+    {
+      "id": "diag-listening",
+      "date": "2026-10-16",
+      "type": "diagnosis",
+      "title": "精聴の初見理解度",
+      "howTo": "NHK WORLD-JAPAN のニュース3本を字幕なしで聞き、理解した割合を自己評価する",
+      "resultFields": [{ "key": "comprehension", "label": "初見理解度 (%)", "kind": "percent" }],
+      "onResult": "レベル表で聞く素材を決める"
+    },
+    { "id": "rec-2026-10", "date": "2026-10-25", "type": "recording", "title": "月末の録音 (10月)" },
+    { "id": "rec-2026-11", "date": "2026-11-29", "type": "recording", "title": "月末の録音 (11月)" },
+    {
+      "id": "test-midterm",
+      "date": "2026-12-27",
+      "type": "test",
+      "title": "『TOEFL iBT公式総合対策』で中間確認",
+      "howTo": "問題1セットを解き、形式ごとの正答率を記録する",
+      "resultFields": [
+        { "key": "reading", "label": "Reading の正答率 (%)", "kind": "percent" },
+        { "key": "listening", "label": "Listening の正答率 (%)", "kind": "percent" },
+        { "key": "weakest", "label": "最も低かった形式", "kind": "text" }
+      ],
+      "target": "形式ごとの正答率を把握する",
+      "onResult": "最も低い形式を仕上げ期の重点にし、レベル表で素材を判定し直す"
+    },
+    { "id": "rec-2026-12", "date": "2026-12-27", "type": "recording", "title": "月末の録音 (12月)" },
+    { "id": "rec-2027-01", "date": "2027-01-31", "type": "recording", "title": "月末の録音 (1月)" },
+    {
+      "id": "test-mock1",
+      "date": "2027-02-13",
+      "type": "test",
+      "title": "公式ガイドの模試1",
+      "howTo": "本番と同じ条件で通しで受ける",
+      "resultFields": [
+        { "key": "reading", "label": "Reading", "kind": "band" },
+        { "key": "listening", "label": "Listening", "kind": "band" },
+        { "key": "writing", "label": "Writing", "kind": "band" },
+        { "key": "speaking", "label": "Speaking", "kind": "band" },
+        { "key": "overall", "label": "総合", "kind": "band" }
+      ],
+      "target": "総合3.5以上",
+      "onResult": "3.5未満なら TOEFL 形式の演習を週2回に減らし、単語と精聴を厚くする"
+    },
+    { "id": "rec-2027-02", "date": "2027-02-28", "type": "recording", "title": "月末の録音 (2月)" },
+    {
+      "id": "test-mock2",
+      "date": "2027-03-13",
+      "type": "test",
+      "title": "公式ガイドの模試2",
+      "howTo": "本番と同じ条件で通しで受ける",
+      "resultFields": [
+        { "key": "reading", "label": "Reading", "kind": "band" },
+        { "key": "listening", "label": "Listening", "kind": "band" },
+        { "key": "writing", "label": "Writing", "kind": "band" },
+        { "key": "speaking", "label": "Speaking", "kind": "band" },
+        { "key": "overall", "label": "総合", "kind": "band" }
+      ],
+      "target": "総合4.0",
+      "onResult": "入省後の計画の出発点にする"
+    },
+    { "id": "rec-2027-03", "date": "2027-03-28", "type": "recording", "title": "月末の録音 (3月・最終)" }
+  ],
+
+  "recordingCheck": {
+    "howTo": "ベースラインと同じ3問に60秒ずつ答えて録音し、初回と聞き比べる (5分)",
+    "resultFields": [
+      { "key": "words", "label": "60秒の語数 (3問の平均)", "kind": "number" },
+      { "key": "pauses", "label": "3秒以上の沈黙の回数 (3問の平均)", "kind": "number" }
+    ],
+    "target": "3月に60秒で100語前後、3秒以上の沈黙が2回以内"
+  },
+
+  "copyTexts": [
+    {
+      "id": "ai-prompt",
+      "label": "AI会話の指示文",
+      "text": "You are my colleague at an international telecom policy meeting. Ask me one question at a time about [topic]. Keep each of your turns under three sentences and push back on my opinions. Do not correct me during the conversation. When I say \"feedback\", list my three most important errors with corrected sentences, and five phrases I could have used."
+    },
+    {
+      "id": "toefl-interview-prompt",
+      "label": "面接形式の練習 (仕上げ期)",
+      "text": "Act as a TOEFL iBT interviewer. Ask me one short question at a time about university life, my experiences, or my opinions. Do not give me preparation time. After each of my answers, ask the next question. When I say \"feedback\", list my three most important errors with corrected sentences."
+    },
+    {
+      "id": "eikaiwa-request",
+      "label": "英会話で講師に頼む一文",
+      "text": "Please ask me follow-up questions and challenge my opinion."
+    },
+    {
+      "id": "speech-fix",
+      "label": "録音の添削を頼む指示文",
+      "text": "次の英語スピーチの書き起こしを、意味を変えずに自然な英語に直してください。直した箇所のうち大事なもの3つについて、理由を日本語で短く教えてください。\n\n[ここに書き起こしを貼る]"
+    },
+    { "id": "baseline-1", "label": "ベースライン質問1", "text": "Tell me about your graduation research." },
+    { "id": "baseline-2", "label": "ベースライン質問2", "text": "Why did you decide to work for the Ministry of Internal Affairs and Communications?" },
+    { "id": "baseline-3", "label": "ベースライン質問3", "text": "Should governments regulate generative AI? Why or why not?" }
+  ],
+
+  "gamification": {
+    "xp": {
+      "perMinute": 1,
+      "source": "完了したタスクの既定時間 (minutes)。楽しみ枠などの optional タスクも加算する",
+      "bonusDoubleCircleDay": 20,
+      "bonusWeekTargetMet": 50
+    },
+    "level": {
+      "formula": "レベル L に到達するのに必要な累計XP = 25 × (L − 1) × L",
+      "examples": { "2": 50, "3": 150, "5": 500, "10": 2250, "15": 5250, "20": 9500 },
+      "note": "計画どおり続けると3月末におよそ Lv20 前後になる"
+    },
+    "titles": [
+      { "fromLevel": 1, "name": "種" },
+      { "fromLevel": 3, "name": "芽" },
+      { "fromLevel": 6, "name": "若葉" },
+      { "fromLevel": 10, "name": "若木" },
+      { "fromLevel": 15, "name": "枝を広げる木" },
+      { "fromLevel": 20, "name": "大樹" }
+    ],
+    "tree": {
+      "trunk": "累計XPに応じて幹が伸び、太くなる。苗木から始まり、約9,500XPで大きな木になる",
+      "branches": "skills の6技能ごとに1本ずつ枝があり、その技能の累計時間に応じて伸びる。枝の色は技能の色",
+      "leaves": "完了したタスク1つにつき葉が1枚増える (描画上は上限を設け、多い場合は葉の茂り方で表す)",
+      "flowers": "◎ の日1日につき花が1つ咲く",
+      "fruits": "checkpoints の test と diagnosis の結果を入力すると実が1つなる",
+      "style": "手帳の雰囲気に合う線画と淡い色。毎回同じ形になるよう、乱数は固定のシードで決める",
+      "todayMini": "今日の画面にも小さく表示し、チェックした瞬間に葉が1枚増える演出を入れる"
+    },
+    "badges": [
+      { "id": "first-check", "name": "はじめの一歩", "rule": "初めてタスクをチェックした" },
+      { "id": "first-double", "name": "初めての ◎", "rule": "初めて ◎ の日をつくった" },
+      { "id": "week-target", "name": "週5日達成", "rule": "印のある日が5日以上の週を初めて達成した" },
+      { "id": "week-target-4", "name": "4週連続で週5日", "rule": "週5日達成を4週連続で達成した" },
+      { "id": "hours-10", "name": "累計10時間", "rule": "ボーナスを除く学習時間が600分に到達" },
+      { "id": "hours-50", "name": "累計50時間", "rule": "ボーナスを除く学習時間が3,000分に到達" },
+      { "id": "hours-100", "name": "累計100時間", "rule": "ボーナスを除く学習時間が6,000分に到達" },
+      { "id": "hours-150", "name": "累計150時間", "rule": "ボーナスを除く学習時間が9,000分に到達" },
+      { "id": "eikaiwa-10", "name": "英会話10回", "rule": "オンライン英会話を10回受けた" },
+      { "id": "ai-20", "name": "AI会話20回", "rule": "AI会話を20回した" },
+      { "id": "policy-20", "name": "政策英語20本", "rule": "政策英語を20回読んだ" },
+      { "id": "fun-10", "name": "楽しみ枠10回", "rule": "楽しみ枠を10回楽しんだ" },
+      { "id": "phase-2", "name": "強化期に到達", "rule": "強化期に入ってから記録した" },
+      { "id": "phase-3", "name": "仕上げ期に到達", "rule": "仕上げ期に入ってから記録した" },
+      { "id": "midterm", "name": "中間確認を終えた", "rule": "中間確認の結果を入力した" },
+      { "id": "mock-1", "name": "模試1を終えた", "rule": "模試1の結果を入力した" },
+      { "id": "mock-2", "name": "模試2を終えた", "rule": "模試2の結果を入力した" }
+    ],
+    "collections": [
+      { "id": "fun-titles", "name": "見た作品", "source": "楽しみ枠を完了した日の1行メモ" },
+      { "id": "policy-articles", "name": "読んだ政策記事", "source": "政策英語を完了した日の1行メモ" }
+    ]
+  }
+}
