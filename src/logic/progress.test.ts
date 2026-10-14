@@ -2,25 +2,21 @@ import { describe, expect, it } from 'vitest'
 import type { DayRecord, Records } from '../data/types'
 import { plan } from '../plan/plan'
 import { addDays, dateRange } from './date'
-import { tasksForDate } from './schedule'
 import { collectionEntries, computeProgress, levelForXp, matchedLevelRows, titleForLevel, xpForLevel } from './progress'
 
-const day = (done: string[], extra: Partial<DayRecord> = {}): DayRecord => ({
-  done,
+const day = (units: Record<string, number>, extra: Partial<DayRecord> = {}): DayRecord => ({
+  units,
   memo: '',
   memoKind: null,
   updatedAt: 0,
   ...extra,
 })
 const empty: Records = { days: {}, checkpoints: {} }
-const MIN = ['min-vocab', 'min-repeat', 'min-record']
+const TWO = { vocab: 2 } // 20分 (○)
+const SIX = { vocab: 2, listening: 3, speaking: 1 } // 60分 (◎)
 
-/** from から to まで、その日の標準タスク (optional を除く) をすべて完了した記録 */
-function perfectDays(from: string, to: string): Records['days'] {
-  return Object.fromEntries(
-    dateRange(from, to).map((d) => [d, day(tasksForDate(plan, d).filter((t) => !t.optional).map((t) => t.id))]),
-  )
-}
+const everyDay = (from: string, to: string, units: Record<string, number>): Records['days'] =>
+  Object.fromEntries(dateRange(from, to).map((d) => [d, day(units)]))
 
 describe('レベル', () => {
   it('plan.json の例と一致する', () => {
@@ -46,37 +42,24 @@ describe('レベル', () => {
 describe('computeProgress: 経験値', () => {
   it('記録なし', () => {
     const p = computeProgress(plan, empty)
-    expect(p).toMatchObject({ xp: 0, level: 1, title: '種', totalMinutes: 0, completedCount: 0, fruits: 0 })
+    expect(p).toMatchObject({ xp: 0, level: 1, title: '種', totalMinutes: 0, checks: 0, fruits: 0 })
     expect(p.badges.every((b) => b.earnedOn === null)).toBe(true)
   })
-  it('時間 × 1 に ◎ のボーナス 20 を足す', () => {
-    // 月曜を ◎ (60分) + 火曜に単語だけ (15分、印なし)
-    const p = computeProgress(plan, {
-      days: { '2026-10-12': day(['vocab', 'listening', 'speech']), '2026-10-13': day(['vocab']) },
-      checkpoints: {},
-    })
-    expect(p.totalMinutes).toBe(75)
+  it('10分 = 10XP、◎ の日に 20 を足す', () => {
+    const p = computeProgress(plan, { days: { '2026-10-12': day(SIX), '2026-10-13': day({ reading: 1 }) }, checkpoints: {} })
+    expect(p.totalMinutes).toBe(70)
+    expect(p.checks).toBe(7)
     expect(p.doubleDays).toEqual(['2026-10-12'])
-    expect(p.xp).toBe(75 + 20)
-    expect(p.minutesBySkill).toMatchObject({ vocab: 30, listening: 25, speaking: 20, policy: 0 })
-    expect(p.completedCount).toBe(4)
-  })
-  it('おまけと最低ラインも時間に入る。振り返りは技能別に入らない', () => {
-    const p = computeProgress(plan, {
-      days: { '2026-10-11': day(['fun', 'weekly-review']), '2026-10-12': day(MIN) },
-      checkpoints: {},
-    })
-    expect(p.totalMinutes).toBe(30 + 20 + 20)
-    expect(p.minutesBySkill).toMatchObject({ fun: 30, vocab: 10, listening: 5, speaking: 5 })
+    expect(p.xp).toBe(70 + 20)
+    expect(p.minutesBySkill).toMatchObject({ vocab: 20, listening: 30, speaking: 10, reading: 10, pronunciation: 0, toefl: 0 })
   })
   it('週の達成ごとに 50', () => {
-    const days = Object.fromEntries(dateRange('2026-10-12', '2026-10-16').map((d) => [d, day(MIN)]))
-    const p = computeProgress(plan, { days, checkpoints: {} })
+    const p = computeProgress(plan, { days: everyDay('2026-10-12', '2026-10-16', TWO), checkpoints: {} })
     expect(p.weeksMet).toEqual(['2026-10-12'])
     expect(p.xp).toBe(5 * 20 + 50)
   })
-  it('計画期間を全部こなすと Lv20 を超える', () => {
-    const p = computeProgress(plan, { days: perfectDays(plan.period.start, plan.period.end), checkpoints: {} })
+  it('毎日60分を続けると3月末に Lv20 を超える', () => {
+    const p = computeProgress(plan, { days: everyDay(plan.period.start, plan.period.end, SIX), checkpoints: {} })
     expect(p.level).toBeGreaterThanOrEqual(20)
   })
   it('結果を入力した test と diagnosis の数だけ実がなる (録音は数えない)', () => {
@@ -92,7 +75,7 @@ describe('computeProgress: 経験値', () => {
   })
   it('書き出して読み込み直しても同じ結果', () => {
     const records: Records = {
-      days: perfectDays('2026-10-10', '2026-12-31'),
+      days: everyDay('2026-10-10', '2026-12-31', SIX),
       checkpoints: { 'diag-toefl': { values: { overall: 3 }, enteredAt: 1760500000000 } },
     }
     const restored = JSON.parse(JSON.stringify(records)) as Records
@@ -104,61 +87,35 @@ describe('computeProgress: バッジ', () => {
   const earnedOn = (records: Records, id: string) => computeProgress(plan, records).badges.find((b) => b.id === id)?.earnedOn
 
   it('はじめの一歩と初めての ◎', () => {
-    const records: Records = {
-      days: { '2026-10-12': day(['vocab']), '2026-10-13': day(['vocab', 'listening', 'policy']) },
-      checkpoints: {},
-    }
+    const records: Records = { days: { '2026-10-12': day({ vocab: 1 }), '2026-10-13': day(SIX) }, checkpoints: {} }
     expect(earnedOn(records, 'first-check')).toBe('2026-10-12')
     expect(earnedOn(records, 'first-double')).toBe('2026-10-13')
   })
   it('週5日達成と4週連続', () => {
     const days: Records['days'] = {}
-    // 4週続けて月〜金に最低ライン。3週目と4週目の間を空けない
-    for (let w = 0; w < 4; w++) {
-      for (let i = 0; i < 5; i++) days[addDays('2026-10-12', w * 7 + i)] = day(MIN)
-    }
+    for (let w = 0; w < 4; w++) for (let i = 0; i < 5; i++) days[addDays('2026-10-12', w * 7 + i)] = day(TWO)
     const records = { days, checkpoints: {} }
     expect(earnedOn(records, 'week-target')).toBe('2026-10-16')
     expect(earnedOn(records, 'week-target-4')).toBe('2026-11-06')
   })
   it('週が途切れると連続はやり直し', () => {
     const days: Records['days'] = {}
-    for (const w of [0, 1, 2, 4, 5, 6]) {
-      for (let i = 0; i < 5; i++) days[addDays('2026-10-12', w * 7 + i)] = day(MIN)
-    }
+    for (const w of [0, 1, 2, 4, 5, 6]) for (let i = 0; i < 5; i++) days[addDays('2026-10-12', w * 7 + i)] = day(TWO)
     expect(earnedOn({ days, checkpoints: {} }, 'week-target-4')).toBeNull()
   })
   it('累計時間はボーナスを除く', () => {
-    const days = perfectDays('2026-10-10', '2026-10-25')
-    const p = computeProgress(plan, { days, checkpoints: {} })
-    const hours10 = p.badges.find((b) => b.id === 'hours-10')!
-    expect(p.totalMinutes).toBeGreaterThanOrEqual(600)
-    // 600分に届いた日を手で確かめる
-    let sum = 0
-    let reached: string | null = null
-    for (const d of Object.keys(days).sort()) {
-      sum += tasksForDate(plan, d).filter((t) => days[d]!.done.includes(t.id)).reduce((s, t) => s + t.minutes, 0)
-      if (sum >= 600) {
-        reached = d
-        break
-      }
-    }
-    expect(hours10.earnedOn).toBe(reached)
+    // 毎日60分 → 10日目に600分
+    const records = { days: everyDay('2026-10-10', '2026-10-31', SIX), checkpoints: {} }
+    expect(earnedOn(records, 'hours-10')).toBe('2026-10-19')
   })
-  it('回数のバッジ: 英会話は eikaiwa の ID だけ、AI会話は m5 のタスク', () => {
-    const days: Records['days'] = {}
-    // 強化期の火・金 (英会話) を10回
-    let d = '2026-11-10'
-    for (let i = 0; i < 10; i++) {
-      days[d] = day(['eikaiwa', 'eikaiwa-prep-review'])
-      d = addDays(d, i % 2 === 0 ? 3 : 4)
-    }
-    const p = computeProgress(plan, { days, checkpoints: {} })
-    expect(p.badges.find((b) => b.id === 'eikaiwa-10')?.earnedOn).not.toBeNull()
-    expect(p.badges.find((b) => b.id === 'ai-20')?.earnedOn).toBeNull()
+  it('分類ごとの時間のバッジ', () => {
+    // スピーキングを毎日60分 → 10日目に10時間
+    const records = { days: everyDay('2026-10-10', '2026-10-25', { speaking: 6 }), checkpoints: {} }
+    expect(earnedOn(records, 'speaking-10h')).toBe('2026-10-19')
+    expect(earnedOn(records, 'reading-10h')).toBeNull()
   })
   it('フェーズ到達', () => {
-    const records: Records = { days: { '2026-11-09': day(['vocab']) }, checkpoints: {} }
+    const records: Records = { days: { '2026-11-09': day({ vocab: 1 }) }, checkpoints: {} }
     expect(earnedOn(records, 'phase-2')).toBe('2026-11-09')
     expect(earnedOn(records, 'phase-3')).toBeNull()
   })
@@ -169,28 +126,28 @@ describe('computeProgress: バッジ', () => {
     expect(earnedOn(records, 'mock-1')).toBeNull()
   })
   it('チェックのない日は記録に数えない', () => {
-    const records: Records = { days: { '2026-11-09': day([], { memo: 'メモだけ' }) }, checkpoints: {} }
+    const records: Records = { days: { '2026-11-09': day({}, { memo: 'メモだけ' }) }, checkpoints: {} }
     expect(earnedOn(records, 'first-check')).toBeNull()
     expect(earnedOn(records, 'phase-2')).toBeNull()
   })
 })
 
 describe('collectionEntries', () => {
-  it('楽しみ枠を完了した日のメモだけを集める', () => {
+  it('「見た作品」「読んだ政策記事」として残したメモを集める', () => {
     const records: Records = {
       days: {
-        '2026-10-17': day(['fun'], { memo: 'The Diplomat S1E1', memoKind: 'fun' }),
-        '2026-10-18': day(['vocab-review'], { memo: '見ていない', memoKind: 'fun' }),
-        '2026-10-24': day(['fun'], { memo: ' The Diplomat S1E2 ', memoKind: 'fun' }),
-        '2026-10-13': day(['policy'], { memo: 'MIC の記事', memoKind: 'policy' }),
+        '2026-10-17': day({ listening: 3 }, { memo: 'The Diplomat S1E1', memoKind: 'fun' }),
+        '2026-10-18': day({}, { memo: 'ふつうのメモ', memoKind: null }),
+        '2026-10-24': day({}, { memo: ' The Diplomat S1E2 ', memoKind: 'fun' }),
+        '2026-10-13': day({ reading: 2 }, { memo: 'MIC の記事', memoKind: 'policy' }),
       },
       checkpoints: {},
     }
-    expect(collectionEntries(plan, records, 'fun')).toEqual([
+    expect(collectionEntries(records, 'fun')).toEqual([
       { date: '2026-10-24', memo: 'The Diplomat S1E2' },
       { date: '2026-10-17', memo: 'The Diplomat S1E1' },
     ])
-    expect(collectionEntries(plan, records, 'policy')).toEqual([{ date: '2026-10-13', memo: 'MIC の記事' }])
+    expect(collectionEntries(records, 'policy')).toEqual([{ date: '2026-10-13', memo: 'MIC の記事' }])
   })
 })
 

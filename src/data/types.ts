@@ -4,7 +4,8 @@ import type { IsoDate } from '../plan/types'
 export type MemoKind = 'fun' | 'policy' | null
 
 export interface DayRecord {
-  done: string[]
+  /** 分類ごとのチェック数 (1チェック = plan.json の logging.unitMinutes 分) */
+  units: Record<string, number>
   memo: string
   memoKind: MemoKind
   /** 最終更新 (ミリ秒)。統合時にメモの新しいほうを選ぶのに使う */

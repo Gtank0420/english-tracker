@@ -1,0 +1,392 @@
+{
+ "note": "旧版 (曜日ごとのタスク) の記録を、分類ごとのチェック数に移すための対応表。旧 plan.json から作った固定データで、編集しない。",
+ "phases": [
+  {
+   "id": "p1",
+   "start": "2026-10-10",
+   "end": "2026-11-08"
+  },
+  {
+   "id": "p2",
+   "start": "2026-11-09",
+   "end": "2027-02-07"
+  },
+  {
+   "id": "p3",
+   "start": "2027-02-08",
+   "end": "2027-03-31"
+  }
+ ],
+ "schedule": {
+  "p1": {
+   "mon": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "listening": [
+     "listening",
+     25
+    ],
+    "speech": [
+     "speaking",
+     20
+    ]
+   },
+   "tue": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "listening": [
+     "listening",
+     25
+    ],
+    "policy": [
+     "reading",
+     20
+    ]
+   },
+   "wed": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "listening": [
+     "listening",
+     25
+    ],
+    "ai": [
+     "speaking",
+     20
+    ]
+   },
+   "thu": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "listening": [
+     "listening",
+     25
+    ],
+    "policy": [
+     "reading",
+     20
+    ]
+   },
+   "fri": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "listening": [
+     "listening",
+     25
+    ],
+    "ai": [
+     "speaking",
+     20
+    ]
+   },
+   "sat": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "long-listening": [
+     "listening",
+     30
+    ],
+    "summary-speech": [
+     "speaking",
+     15
+    ],
+    "fun": [
+     "listening",
+     30
+    ]
+   },
+   "sun": {
+    "vocab-review": [
+     "vocab",
+     10
+    ],
+    "weekly-review": [
+     null,
+     20
+    ],
+    "fun": [
+     "listening",
+     30
+    ]
+   }
+  },
+  "p2": {
+   "mon": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "listening": [
+     "listening",
+     25
+    ],
+    "speech": [
+     "speaking",
+     20
+    ],
+    "my-deck": [
+     "vocab",
+     5
+    ]
+   },
+   "tue": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "eikaiwa": [
+     "speaking",
+     25
+    ],
+    "eikaiwa-prep-review": [
+     "speaking",
+     20
+    ],
+    "my-deck": [
+     "vocab",
+     5
+    ]
+   },
+   "wed": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "listening": [
+     "listening",
+     25
+    ],
+    "policy": [
+     "reading",
+     20
+    ],
+    "my-deck": [
+     "vocab",
+     5
+    ]
+   },
+   "thu": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "listening": [
+     "listening",
+     25
+    ],
+    "ai": [
+     "speaking",
+     20
+    ],
+    "my-deck": [
+     "vocab",
+     5
+    ]
+   },
+   "fri": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "eikaiwa": [
+     "speaking",
+     25
+    ],
+    "eikaiwa-prep-review": [
+     "speaking",
+     20
+    ],
+    "my-deck": [
+     "vocab",
+     5
+    ]
+   },
+   "sat": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "long-listening": [
+     "listening",
+     30
+    ],
+    "summary-speech": [
+     "speaking",
+     15
+    ],
+    "fun": [
+     "listening",
+     30
+    ]
+   },
+   "sun": {
+    "vocab-review": [
+     "vocab",
+     10
+    ],
+    "weekly-review": [
+     null,
+     20
+    ],
+    "fun": [
+     "listening",
+     30
+    ]
+   }
+  },
+  "p3": {
+   "mon": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "toefl-reading": [
+     "toefl",
+     20
+    ],
+    "listening": [
+     "listening",
+     25
+    ]
+   },
+   "tue": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "eikaiwa": [
+     "speaking",
+     25
+    ],
+    "eikaiwa-prep-review": [
+     "speaking",
+     20
+    ]
+   },
+   "wed": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "toefl-listening": [
+     "toefl",
+     20
+    ],
+    "listen-repeat": [
+     "toefl",
+     10
+    ],
+    "interview": [
+     "speaking",
+     15
+    ]
+   },
+   "thu": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "toefl-writing": [
+     "toefl",
+     30
+    ],
+    "writing-fix": [
+     "toefl",
+     15
+    ]
+   },
+   "fri": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "eikaiwa": [
+     "speaking",
+     25
+    ],
+    "policy": [
+     "reading",
+     20
+    ]
+   },
+   "sat": {
+    "vocab": [
+     "vocab",
+     15
+    ],
+    "weak-practice": [
+     "toefl",
+     45
+    ],
+    "fun": [
+     "listening",
+     30
+    ]
+   },
+   "sun": {
+    "vocab-review": [
+     "vocab",
+     10
+    ],
+    "weekly-review": [
+     null,
+     20
+    ],
+    "fun": [
+     "listening",
+     30
+    ]
+   }
+  }
+ },
+ "minimum": {
+  "min-vocab": [
+   "vocab",
+   10
+  ],
+  "min-repeat": [
+   "listening",
+   5
+  ],
+  "min-record": [
+   "speaking",
+   5
+  ]
+ },
+ "special": {
+  "2027-02-13": {
+   "remove": [
+    "weak-practice"
+   ],
+   "add": {
+    "mock": [
+     "toefl",
+     120
+    ]
+   }
+  },
+  "2027-03-13": {
+   "remove": [
+    "weak-practice"
+   ],
+   "add": {
+    "mock": [
+     "toefl",
+     120
+    ]
+   }
+  }
+ }
+}

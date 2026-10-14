@@ -339,9 +339,9 @@ export function Tree({
 export function treeDataOf(p: {
   xp: number
   minutesBySkill: Record<string, number>
-  completedCount: number
+  checks: number
   doubleDays: unknown[]
   fruits: number
 }): TreeData {
-  return { xp: p.xp, minutesBySkill: p.minutesBySkill, leaves: p.completedCount, flowers: p.doubleDays.length, fruits: p.fruits }
+  return { xp: p.xp, minutesBySkill: p.minutesBySkill, leaves: p.checks, flowers: p.doubleDays.length, fruits: p.fruits }
 }

@@ -4,7 +4,7 @@ import { plan } from '../plan/plan'
 import { Tree, type TreeData } from '../ui/Tree'
 
 // 計画をおよそ7割こなした場合の割合で、XP から木の材料を作る
-const SKILL_SHARE: Record<string, number> = { vocab: 0.26, listening: 0.26, speaking: 0.2, policy: 0.1, fun: 0.12, toefl: 0.06 }
+const SKILL_SHARE: Record<string, number> = { vocab: 0.24, listening: 0.3, speaking: 0.2, reading: 0.1, pronunciation: 0.08, toefl: 0.08 }
 
 function sampleData(xp: number): TreeData {
   const minutes = xp * 0.85
@@ -18,7 +18,7 @@ function sampleData(xp: number): TreeData {
   return {
     xp,
     minutesBySkill,
-    leaves: Math.round(xp / 29),
+    leaves: Math.round(minutes / plan.logging.unitMinutes),
     flowers: Math.round(xp / 150),
     fruits: xp === 0 ? 0 : Math.min(9, Math.round(xp / 1200) + 2),
   }
@@ -35,7 +35,7 @@ export function TreeDevScreen() {
   return (
     <div className="stack">
       <h1>木の成長過程 (開発用)</h1>
-      <p className="small muted">葉は XP÷29、花は XP÷150、実は入力したテストの数の目安で作った見本です。</p>
+      <p className="small muted">葉は学習時間÷{plan.logging.unitMinutes}分、花は XP÷150、実は入力したテストの数の目安で作った見本です。</p>
       <div className="tree-stages">
         {STAGES.map((x) => {
           const d = sampleData(x)

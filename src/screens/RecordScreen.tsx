@@ -1,12 +1,11 @@
 // 記録画面: 大きな木、カレンダー、累計時間、バッジ、コレクション、確認テストの結果
 import { useState } from 'react'
-import { emptyDay, setTaskDone, useStore } from '../data/store'
-import type { MemoKind } from '../data/types'
+import { useStore } from '../data/store'
 import { useProgress } from '../hooks/useProgress'
 import { addDays, weekStart } from '../logic/date'
-import { completedTasks, dayMark } from '../logic/marks'
-import { COLLECTION_KINDS, collectionEntries } from '../logic/progress'
-import { checkpointsOn, isInPeriod, minimumTasks, tasksForDate } from '../logic/schedule'
+import { dayMark } from '../logic/marks'
+import { collectionEntries } from '../logic/progress'
+import { checkpointsOn, isInPeriod } from '../logic/schedule'
 import { plan } from '../plan/plan'
 import type { IsoDate } from '../plan/types'
 import { formatMinutes, SkillBars, TrendChart } from '../ui/Charts'
@@ -14,7 +13,7 @@ import { BackIcon, ChevronIcon } from '../ui/Icons'
 import { Sheet } from '../ui/Sheet'
 import { Tree, treeDataOf } from '../ui/Tree'
 import { fieldsOf, formatValue } from './CheckpointForm'
-import { formatDate, MarkBadge, MemoField, TaskRow } from './TodayScreen'
+import { DayLog, formatDate, MemoField } from './DayLog'
 
 const WEEK_HEAD = ['月', '火', '水', '木', '金', '土', '日']
 
@@ -27,43 +26,13 @@ function shiftMonth(month: string, delta: number): string {
   return d.toISOString().slice(0, 7)
 }
 
-/** 過去の日のタスクをチェックし直す */
+/** 過去の日の記録をつけ直す */
 function DayEditor({ date }: { date: IsoDate }) {
-  const { records } = useStore()
-  const done = (records.days[date] ?? emptyDay()).done
-  const tasks = tasksForDate(plan, date)
-  const groups = [
-    { label: null, tasks: tasks.filter((t) => !t.optional) },
-    { label: 'おまけ', tasks: tasks.filter((t) => t.optional) },
-    { label: '最低ライン', tasks: minimumTasks(plan) },
-  ]
-  const eligibleKinds = [
-    ...new Set(
-      completedTasks(plan, date, done)
-        .map((t) => t.skill)
-        .filter((s): s is Exclude<MemoKind, null> => s === 'fun' || s === 'policy'),
-    ),
-  ]
   return (
     <div className="stack">
       <h2>{formatDate(date)}</h2>
-      <div>
-        {groups.map(
-          (g) =>
-            g.tasks.length > 0 && (
-              <div key={g.label ?? 'main'}>
-                {g.label && <p className="section-label">{g.label}</p>}
-                <ul className="task-list">
-                  {g.tasks.map((t) => (
-                    <TaskRow key={t.id} task={t} checked={done.includes(t.id)} onToggle={(c) => setTaskDone(date, t.id, c)} />
-                  ))}
-                </ul>
-              </div>
-            ),
-        )}
-      </div>
-      <MarkBadge date={date} done={done} />
-      <MemoField key={date} date={date} eligibleKinds={eligibleKinds} />
+      <DayLog date={date} />
+      <MemoField key={date} date={date} />
     </div>
   )
 }
@@ -103,7 +72,7 @@ function Calendar({ today, onPick }: { today: IsoDate; onPick: (d: IsoDate) => v
         {cells.map((d) => {
           const inMonth = monthOf(d) === month
           if (!inMonth) return <span key={d} className="calendar-cell is-outside" aria-hidden="true" />
-          const mark = dayMark(plan, d, records.days[d]?.done ?? [])
+          const mark = dayMark(plan, records.days[d]?.units ?? {})
           const editable = isInPeriod(plan, d) && d <= today
           const hasCheckpoint = checkpointsOn(plan, d).length > 0
           const label = `${formatDate(d)}${mark === 'double' ? ' ◎' : mark === 'circle' ? ' ○' : ''}${hasCheckpoint ? ' 確認テスト' : ''}`
@@ -125,8 +94,8 @@ function Calendar({ today, onPick }: { today: IsoDate; onPick: (d: IsoDate) => v
         })}
       </div>
       <p className="small muted calendar-legend">
-        <span className="legend-swatch mark-circle">○</span> 印のある日 <span className="legend-swatch mark-double">◎</span> 標準をすべて終えた日
-        ・ 過去の日を押すとチェックし直せます
+        <span className="legend-swatch mark-circle">○</span> {plan.markRules.circleMinutes}分以上{' '}
+        <span className="legend-swatch mark-double">◎</span> {plan.markRules.doubleCircleMinutes}分以上 ・ 過去の日を押すと記録をつけ直せます
       </p>
     </div>
   )
@@ -139,7 +108,7 @@ export function RecordScreen({ today }: { today: IsoDate }) {
 
   const collections = plan.gamification.collections.map((c) => ({
     ...c,
-    entries: COLLECTION_KINDS[c.id] ? collectionEntries(plan, records, COLLECTION_KINDS[c.id]!) : [],
+    entries: collectionEntries(records, c.kind),
   }))
   const recordings = plan.checkpoints
     .filter((c) => c.type === 'recording' && records.checkpoints[c.id])
@@ -174,7 +143,7 @@ export function RecordScreen({ today }: { today: IsoDate }) {
           <div>
             <span className="stat-label">葉・花・実</span>
             <span className="stat-value">
-              {progress.completedCount}・{progress.doubleDays.length}・{progress.fruits}
+              {progress.checks}・{progress.doubleDays.length}・{progress.fruits}
             </span>
           </div>
           <div>
@@ -182,7 +151,9 @@ export function RecordScreen({ today }: { today: IsoDate }) {
             <span className="stat-value">{progress.weeksMet.length} 週</span>
           </div>
         </div>
-        <p className="small muted">葉はタスク1つ、花は ◎ の日、実は確認テストと診断の結果1つにつき増えます。</p>
+        <p className="small muted">
+          葉は{plan.logging.unitMinutes}分のチェック1つ、花は ◎ の日、実は確認テストと診断の結果1つにつき増えます。
+        </p>
       </section>
 
       <section className="card" aria-label="カレンダー">
@@ -195,7 +166,7 @@ export function RecordScreen({ today }: { today: IsoDate }) {
           <span className="stat-value">{formatMinutes(progress.totalMinutes)}</span>
         </div>
         <SkillBars minutesBySkill={progress.minutesBySkill} />
-        <p className="small muted">振り返りの時間は合計にだけ入ります。ボーナスの XP は含みません。</p>
+        <p className="small muted">ボーナスの XP は含みません。</p>
       </section>
 
       <section className="card stack" aria-labelledby="badge-title">

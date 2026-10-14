@@ -1,7 +1,9 @@
 // 記録の統合と、書き出しファイルの検証 (画面や保存先に依存しない)
+import { plan } from '../plan/plan'
+import { unitsFromLegacyDone } from './legacy'
 import type { CheckpointRecord, DayRecord, MemoKind, Records, Settings, Theme } from './types'
 
-/** 日付ごとに統合する。完了リストは和集合、メモは新しいほう。確認テストは base を優先 */
+/** 日付ごとに統合する。チェック数は分類ごとに多いほう、メモは新しいほう。確認テストは base を優先 */
 export function mergeRecords(base: Records, incoming: Records): Records {
   const days: Records['days'] = { ...base.days }
   for (const [date, inc] of Object.entries(incoming.days)) {
@@ -15,8 +17,10 @@ export function mergeDay(a: DayRecord, b: DayRecord): DayRecord {
   const newer = b.updatedAt > a.updatedAt ? b : a
   // 片方のメモが空なら、もう片方を残す
   const memoSource = newer.memo.trim() ? newer : a.memo.trim() ? a : b
+  const units: Record<string, number> = { ...a.units }
+  for (const [skill, n] of Object.entries(b.units)) units[skill] = Math.max(units[skill] ?? 0, n)
   return {
-    done: [...new Set([...a.done, ...b.done])],
+    units,
     memo: memoSource.memo,
     memoKind: memoSource.memoKind,
     updatedAt: Math.max(a.updatedAt, b.updatedAt),
@@ -31,8 +35,12 @@ export function isEmptyRecords(r: Records): boolean {
 
 export const APP_ID = 'english-tracker'
 
+/** 書き出しファイルの形の版。2 から分類ごとのチェック数 (units) */
+export const EXPORT_VERSION = 2
+
 export interface ExportFile {
   app: typeof APP_ID
+  version: number
   exportedAt: string
   days: Records['days']
   checkpoints: Records['checkpoints']
@@ -40,7 +48,7 @@ export interface ExportFile {
 }
 
 export function buildExport(records: Records, settings: Settings, now = new Date()): ExportFile {
-  return { app: APP_ID, exportedAt: now.toISOString(), days: records.days, checkpoints: records.checkpoints, settings }
+  return { app: APP_ID, version: EXPORT_VERSION, exportedAt: now.toISOString(), days: records.days, checkpoints: records.checkpoints, settings }
 }
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
@@ -48,18 +56,40 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 const THEMES: Theme[] = ['light', 'dark', 'system']
 const MEMO_KINDS: MemoKind[] = ['fun', 'policy', null]
 
-/** Firestore や書き出しファイルの1日分を DayRecord に整える。形が違えば null */
-export function parseDay(v: unknown): DayRecord | null {
+/** 旧版 (タスクの完了リスト done) の形か */
+export function isLegacyDay(v: unknown): boolean {
+  return isObject(v) && v.units === undefined && v.done !== undefined
+}
+
+function parseUnits(v: unknown): Record<string, number> | null {
   if (!isObject(v)) return null
-  const done = v.done ?? []
-  if (!Array.isArray(done) || !done.every((x) => typeof x === 'string')) return null
+  const out: Record<string, number> = {}
+  for (const [k, n] of Object.entries(v)) {
+    if (typeof n !== 'number' || !Number.isInteger(n) || n < 0) return null
+    if (n > 0) out[k] = n
+  }
+  return out
+}
+
+/** Firestore や書き出しファイルの1日分を DayRecord に整える。旧版の形は変換する。形が違えば null */
+export function parseDay(v: unknown, date: string): DayRecord | null {
+  if (!isObject(v)) return null
+  let units: Record<string, number> | null
+  if (isLegacyDay(v)) {
+    const done = v.done
+    if (!Array.isArray(done) || !done.every((x) => typeof x === 'string')) return null
+    units = unitsFromLegacyDone(date, done as string[], plan.logging.unitMinutes)
+  } else {
+    units = parseUnits(v.units ?? {})
+  }
+  if (!units) return null
   const memo = v.memo ?? ''
   if (typeof memo !== 'string') return null
   const memoKind = (v.memoKind ?? null) as MemoKind
   if (!MEMO_KINDS.includes(memoKind)) return null
   const updatedAt = v.updatedAt ?? 0
   if (typeof updatedAt !== 'number' || !Number.isFinite(updatedAt)) return null
-  return { done: [...new Set(done as string[])], memo, memoKind, updatedAt }
+  return { units, memo, memoKind, updatedAt }
 }
 
 export function parseCheckpoint(v: unknown): CheckpointRecord | null {
@@ -103,7 +133,7 @@ export function parseExport(text: string): ParseResult {
 
   const days: Records['days'] = {}
   for (const [date, v] of Object.entries(json.days)) {
-    const day = DATE_RE.test(date) ? parseDay(v) : null
+    const day = DATE_RE.test(date) ? parseDay(v, date) : null
     if (!day) return { ok: false, error: `${date} の記録が壊れています` }
     days[date] = day
   }

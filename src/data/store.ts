@@ -4,7 +4,7 @@ import { useSyncExternalStore } from 'react'
 import { plan } from '../plan/plan'
 import type { IsoDate } from '../plan/types'
 import * as idb from './idb'
-import { buildExport, isEmptyRecords, mergeRecords } from './merge'
+import { buildExport, isEmptyRecords, isLegacyDay, mergeRecords, parseDay } from './merge'
 import type { CheckpointRecord, DayRecord, MemoKind, Records, Settings } from './types'
 
 type Cloud = typeof import('./cloud')
@@ -96,11 +96,19 @@ function persist(local: () => Promise<void>, remote: (c: Cloud, uid: string) => 
 // ---- 起動 ----
 
 async function loadLocal(): Promise<{ records: Records; settings: Partial<Settings> }> {
-  const [days, checkpoints, meta] = await Promise.all([
-    idb.readAll<DayRecord>('days'),
+  const [rawDays, checkpoints, meta] = await Promise.all([
+    idb.readAll<unknown>('days'),
     idb.readAll<CheckpointRecord>('checkpoints'),
     idb.readAll<Partial<Settings>>('meta'),
   ])
+  const days: Records['days'] = {}
+  for (const [date, raw] of Object.entries(rawDays)) {
+    const day = parseDay(raw, date)
+    if (!day) continue
+    days[date] = day
+    // 旧版の形の記録は、新しい形に書き直す
+    if (isLegacyDay(raw)) await idb.put('days', date, day)
+  }
   return { records: { days, checkpoints }, settings: meta.settings ?? {} }
 }
 
@@ -257,7 +265,7 @@ export async function logout(): Promise<void> {
 // ---- 記録の変更 ----
 
 export function emptyDay(): DayRecord {
-  return { done: [], memo: '', memoKind: null, updatedAt: 0 }
+  return { units: {}, memo: '', memoKind: null, updatedAt: 0 }
 }
 
 function updateDay(date: IsoDate, change: (day: DayRecord) => DayRecord): DayRecord {
@@ -266,14 +274,19 @@ function updateDay(date: IsoDate, change: (day: DayRecord) => DayRecord): DayRec
   return day
 }
 
-export function setTaskDone(date: IsoDate, taskId: string, isDone: boolean) {
-  const day = updateDay(date, (d) => ({
-    ...d,
-    done: isDone ? [...new Set([...d.done, taskId])] : d.done.filter((id) => id !== taskId),
-  }))
+/** その日のある分類のチェック数を count にする */
+export function setUnits(date: IsoDate, skillId: string, count: number) {
+  const n = Math.max(0, Math.floor(count))
+  if ((state.records.days[date]?.units[skillId] ?? 0) === n) return
+  const day = updateDay(date, (d) => {
+    const units = { ...d.units }
+    if (n > 0) units[skillId] = n
+    else delete units[skillId]
+    return { ...d, units }
+  })
   persist(
     () => idb.put('days', date, day),
-    (c, u) => c.setDone(u, date, taskId, isDone, day.updatedAt),
+    (c, u) => c.setUnits(u, date, skillId, n, day.updatedAt),
   )
 }
 

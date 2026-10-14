@@ -12,50 +12,30 @@ export function validatePlan(p: Plan): string[] {
   const materialIds = new Set(p.materials.map((m) => m.id))
   const copyIds = new Set(p.copyTexts.map((c) => c.id))
   const checkpointIds = new Set(p.checkpoints.map((c) => c.id))
-  const weekdays = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
 
+  for (const s of p.skills) {
+    for (const id of s.menuIds) if (!menuIds.has(id)) errors.push(`分類 ${s.id}: メニュー ${id} がない`)
+  }
   for (const m of p.menus) {
-    if (!skillIds.has(m.skill)) errors.push(`menu ${m.id}: 技能 ${m.skill} がない`)
+    if (!skillIds.has(m.skill)) errors.push(`menu ${m.id}: 分類 ${m.skill} がない`)
     for (const id of m.materialIds) if (!materialIds.has(id)) errors.push(`menu ${m.id}: 教材 ${id} がない`)
     for (const id of m.copyTextIds) if (!copyIds.has(id)) errors.push(`menu ${m.id}: コピー文 ${id} がない`)
   }
-  for (const t of p.minimumTasks) {
-    if (!skillIds.has(t.skill)) errors.push(`minimumTasks ${t.id}: 技能 ${t.skill} がない`)
-    if (t.menuId && !menuIds.has(t.menuId)) errors.push(`minimumTasks ${t.id}: メニュー ${t.menuId} がない`)
-  }
-  for (const ph of p.phases) {
-    const week = p.schedule[ph.id]
-    if (!week) {
-      errors.push(`schedule に ${ph.id} がない`)
-      continue
-    }
-    for (const d of weekdays) {
-      const tasks = week[d]
-      if (!tasks) {
-        errors.push(`schedule.${ph.id}.${d} がない`)
-        continue
-      }
-      const seen = new Set<string>()
-      for (const t of tasks) {
-        if (seen.has(t.id)) errors.push(`schedule.${ph.id}.${d}: タスク ID ${t.id} が重複`)
-        seen.add(t.id)
-        if (t.menuId && !menuIds.has(t.menuId)) errors.push(`schedule.${ph.id}.${d}.${t.id}: メニュー ${t.menuId} がない`)
-      }
-    }
-  }
-  for (const sd of p.specialDays) {
-    for (const t of sd.addTasks) {
-      if (t.menuId && !menuIds.has(t.menuId)) errors.push(`specialDays ${sd.date}.${t.id}: メニュー ${t.menuId} がない`)
-    }
-  }
   for (const m of p.materials) {
-    if (!skillIds.has(m.skill)) errors.push(`material ${m.id}: 技能 ${m.skill} がない`)
+    if (!skillIds.has(m.skill)) errors.push(`material ${m.id}: 分類 ${m.skill} がない`)
   }
   for (const row of p.levelTable) {
-    if (!skillIds.has(row.skill)) errors.push(`levelTable: 技能 ${row.skill} がない`)
+    if (!skillIds.has(row.skill)) errors.push(`levelTable: 分類 ${row.skill} がない`)
     for (const m of row.match ?? []) {
       if (m.checkpoint && !checkpointIds.has(m.checkpoint)) errors.push(`levelTable: 確認テスト ${m.checkpoint} がない`)
     }
+  }
+  const { unitMinutes, initialBoxes } = p.logging
+  if (!(unitMinutes > 0) || !(initialBoxes > 0)) errors.push('logging: unitMinutes と initialBoxes は1以上')
+  if (p.markRules.circleMinutes > p.markRules.doubleCircleMinutes) errors.push('markRules: ○ の分数が ◎ より大きい')
+  for (const b of p.gamification.badges) {
+    const m = /^(.+)-(\d+)h$/.exec(b.id)
+    if (m && !skillIds.has(m[1]!)) errors.push(`badge ${b.id}: 分類 ${m[1]} がない`)
   }
   return errors
 }

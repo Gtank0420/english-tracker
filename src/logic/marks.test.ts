@@ -1,55 +1,42 @@
 import { describe, expect, it } from 'vitest'
 import { plan } from '../plan/plan'
-import { circleMinutes, dayMark, weekProgress } from './marks'
+import { dayMark, dayMinutes, minutesBySkillOf, weekProgress } from './marks'
 
-const MON = '2026-10-12' // 再起動期の月曜: vocab 15, listening 25, speech 20
-const SAT = '2026-10-17' // 再起動期の土曜: おまけの楽しみ枠あり
+describe('1日の時間', () => {
+  it('1チェック = 10分', () => {
+    expect(plan.logging.unitMinutes).toBe(10)
+    expect(dayMinutes(plan, { vocab: 2, listening: 3 })).toBe(50)
+    expect(minutesBySkillOf(plan, { speaking: 1 })).toMatchObject({ speaking: 10, vocab: 0 })
+  })
+  it('plan.json にない分類は数えない', () => {
+    expect(dayMinutes(plan, { vocab: 1, policy: 5 })).toBe(10)
+  })
+})
 
 describe('dayMark', () => {
   it('何もしていない日は印なし', () => {
-    expect(dayMark(plan, MON, [])).toBeNull()
-  })
-  it('最低ライン3項目を完了すると ○', () => {
-    expect(circleMinutes(plan)).toBe(20)
-    expect(dayMark(plan, MON, ['min-vocab', 'min-repeat', 'min-record'])).toBe('circle')
-  })
-  it('最低ラインが2項目 (15分) だけなら印なし', () => {
-    expect(dayMark(plan, MON, ['min-vocab', 'min-repeat'])).toBeNull()
+    expect(dayMark(plan, {})).toBeNull()
   })
   it('合計20分以上で ○、20分未満は印なし', () => {
-    expect(dayMark(plan, MON, ['vocab'])).toBeNull() // 15分
-    expect(dayMark(plan, MON, ['vocab', 'min-record'])).toBe('circle') // 20分
-    expect(dayMark(plan, MON, ['listening'])).toBe('circle') // 25分
+    expect(dayMark(plan, { vocab: 1 })).toBeNull()
+    expect(dayMark(plan, { vocab: 2 })).toBe('circle')
+    expect(dayMark(plan, { vocab: 1, pronunciation: 1 })).toBe('circle')
+    expect(dayMark(plan, { listening: 5 })).toBe('circle')
   })
-  it('標準タスクをすべて完了すると ◎', () => {
-    expect(dayMark(plan, MON, ['vocab', 'listening', 'speech'])).toBe('double')
-  })
-  it('おまけ (optional) は ◎ に要らない', () => {
-    expect(dayMark(plan, SAT, ['vocab', 'long-listening', 'summary-speech'])).toBe('double')
-    expect(dayMark(plan, SAT, ['vocab', 'long-listening', 'fun'])).toBe('circle')
-  })
-  it('その日にない ID は無視する', () => {
-    expect(dayMark(plan, MON, ['policy', 'eikaiwa'])).toBeNull()
-  })
-  it('模試の日は模試が標準タスク', () => {
-    expect(dayMark(plan, '2027-02-13', ['vocab', 'mock'])).toBe('double')
-    expect(dayMark(plan, '2027-02-13', ['vocab', 'weak-practice'])).toBeNull()
+  it('合計60分以上で ◎', () => {
+    expect(dayMark(plan, { listening: 6 })).toBe('double')
+    expect(dayMark(plan, { vocab: 2, listening: 3, speaking: 1 })).toBe('double')
   })
 })
 
 describe('weekProgress', () => {
-  const full = ['min-vocab', 'min-repeat', 'min-record']
+  const two = { vocab: 2 }
   it('印のある日が5日で週の達成', () => {
-    const days = {
-      '2026-10-12': full,
-      '2026-10-13': full,
-      '2026-10-14': full,
-      '2026-10-15': full,
-    }
+    const days = { '2026-10-12': two, '2026-10-13': two, '2026-10-14': two, '2026-10-15': two }
     expect(weekProgress(plan, '2026-10-15', days)).toMatchObject({ weekStart: '2026-10-12', markedDays: 4, met: false })
-    expect(weekProgress(plan, '2026-10-18', { ...days, '2026-10-18': full })).toMatchObject({ markedDays: 5, target: 5, met: true })
+    expect(weekProgress(plan, '2026-10-18', { ...days, '2026-10-18': two })).toMatchObject({ markedDays: 5, target: 5, met: true })
   })
   it('前の週の記録は数えない', () => {
-    expect(weekProgress(plan, '2026-10-12', { '2026-10-11': full }).markedDays).toBe(0)
+    expect(weekProgress(plan, '2026-10-12', { '2026-10-11': two }).markedDays).toBe(0)
   })
 })

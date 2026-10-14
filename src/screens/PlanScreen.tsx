@@ -6,20 +6,11 @@ import { diffDays } from '../logic/date'
 import { matchedLevelRows } from '../logic/progress'
 import { phaseFor } from '../logic/schedule'
 import { plan } from '../plan/plan'
-import type { IsoDate, WeekdayKey } from '../plan/types'
+import type { IsoDate } from '../plan/types'
 import { Sheet } from '../ui/Sheet'
-import { SkillTag } from '../ui/SkillTag'
+import { SkillTag, skillStyle } from '../ui/SkillTag'
 import { CheckpointForm, fieldsOf, formatValue } from './CheckpointForm'
 
-const WEEKDAYS: [WeekdayKey, string][] = [
-  ['mon', '月'],
-  ['tue', '火'],
-  ['wed', '水'],
-  ['thu', '木'],
-  ['fri', '金'],
-  ['sat', '土'],
-  ['sun', '日'],
-]
 const TYPE_LABEL = { diagnosis: '診断', test: '確認テスト', recording: '録音' } as const
 
 const shortDate = (d: IsoDate) => d.replace(/^\d{4}-0?(\d+)-0?(\d+)$/, '$1/$2')
@@ -70,50 +61,30 @@ function Roadmap({ today }: { today: IsoDate }) {
   )
 }
 
-function WeekTable({ phaseId }: { phaseId: string }) {
-  const week = plan.schedule[phaseId]
-  if (!week) return null
+/** 記録の分類と、やり方を見るメニュー */
+function SkillMenus() {
   return (
-    <table className="week-table">
-      <thead>
-        <tr>
-          <th scope="col">曜日</th>
-          <th scope="col">タスクと時間</th>
-          <th scope="col" className="num">
-            合計
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {WEEKDAYS.map(([key, ja]) => {
-          const tasks = week[key] ?? []
-          const sum = tasks.filter((t) => !t.optional).reduce((s, t) => s + t.minutes, 0)
-          return (
-            <tr key={key}>
-              <th scope="row">{ja}</th>
-              <td>
-                <ul>
-                  {tasks.map((t) => (
-                    <li key={t.id} className={t.optional ? 'muted' : undefined}>
-                      {t.optional && 'おまけ: '}
-                      {t.label} <span className="nowrap">{t.minutes}分</span>
-                    </li>
-                  ))}
-                </ul>
-              </td>
-              <td className="num">{sum}分</td>
-            </tr>
-          )
-        })}
-      </tbody>
-    </table>
+    <ul className="skill-menus">
+      {plan.skills.map((s) => (
+        <li key={s.id} style={skillStyle(s.id)}>
+          <strong className="skill-menus-name">{s.name}</strong>
+          <span className="skill-menus-links">
+            {s.menuIds.length === 0 && <span className="muted small">メニューなし</span>}
+            {s.menuIds.flatMap((id) => plan.menus.filter((m) => m.id === id)).map((m) => (
+              <a key={m.id} href={`#/menu/${m.id}`}>
+                {m.no}. {m.name}
+              </a>
+            ))}
+          </span>
+        </li>
+      ))}
+    </ul>
   )
 }
 
 export function PlanScreen({ today, checkpointId }: { today: IsoDate; checkpointId?: string }) {
   const { records } = useStore()
   const current = phaseFor(plan, today)
-  const [phaseId, setPhaseId] = useState(current.phase?.id ?? plan.phases[0]!.id)
   const [openId, setOpenId] = useState<string | null>(null)
   const matched = matchedLevelRows(plan, records.checkpoints)
 
@@ -141,19 +112,13 @@ export function PlanScreen({ today, checkpointId }: { today: IsoDate; checkpoint
         )}
       </section>
 
-      <section className="card stack" aria-labelledby="week-title">
-        <h2 id="week-title">週間スケジュール</h2>
-        <fieldset className="seg">
-          <legend>時期</legend>
-          {plan.phases.map((p) => (
-            <label key={p.id}>
-              <input type="radio" name="week-phase" checked={phaseId === p.id} onChange={() => setPhaseId(p.id)} />
-              <span>{p.name}</span>
-            </label>
-          ))}
-        </fieldset>
-        <WeekTable phaseId={phaseId} />
-        <p className="small muted">合計はおまけを除いた時間です。</p>
+      <section className="card stack" aria-labelledby="skills-title">
+        <h2 id="skills-title">記録の分類とメニュー</h2>
+        <p className="small">
+          毎日、分類ごとに{plan.logging.unitMinutes}分につき1つチェックします。合計{plan.markRules.circleMinutes}分以上で ○、
+          {plan.markRules.doubleCircleMinutes}分以上で ◎、印のある日が週{plan.markRules.weekTargetDays}日で週の達成です。
+        </p>
+        <SkillMenus />
       </section>
 
       <section className="card stack" aria-labelledby="cp-title">

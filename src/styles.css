@@ -298,9 +298,6 @@ button {
   font-size: 1.0625rem;
   font-weight: 700;
 }
-.level-row {
-  grid-column: 1 / -1;
-}
 .bar {
   height: 10px;
   border-radius: 5px;
@@ -316,96 +313,6 @@ button {
   border-radius: 5px;
   transition: width 0.4s ease;
 }
-
-/* ---- タスク ---- */
-.task-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.task {
-  display: flex;
-  align-items: stretch;
-  border-bottom: 1px dashed var(--rule);
-}
-.task:last-child {
-  border-bottom: none;
-}
-
-.check {
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  min-height: 56px;
-  cursor: pointer;
-}
-.check input {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
-}
-.check .box {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border: 2px solid var(--rule-strong);
-  border-radius: 6px;
-  background: var(--surface);
-  transition:
-    background 0.15s,
-    border-color 0.15s;
-}
-.check .box svg {
-  opacity: 0;
-  transform: scale(0.6);
-  transition:
-    opacity 0.15s,
-    transform 0.15s;
-}
-.check input:checked + .box {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
-}
-.check input:checked + .box svg {
-  opacity: 1;
-  transform: scale(1);
-}
-.check input:focus-visible + .box {
-  outline: 3px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.task-body {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 56px;
-  min-width: 0;
-  padding: 8px 4px 8px 0;
-  border: none;
-  background: none;
-  text-align: left;
-  cursor: pointer;
-}
-.task-body:disabled {
-  cursor: default;
-}
-.task-text {
-  flex: 1;
-  min-width: 0;
-}
-.task-label {
-  display: block;
-}
-.task.is-done .task-label {
-  color: var(--ink-soft);
-}
 .task-meta {
   display: flex;
   flex-wrap: wrap;
@@ -417,20 +324,6 @@ button {
 .chevron {
   flex: none;
   color: var(--ink-soft);
-}
-
-.section-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 12px 0 0;
-  font-size: 0.875rem;
-  color: var(--ink-soft);
-}
-.section-label::after {
-  content: '';
-  flex: 1;
-  border-top: 1px solid var(--rule);
 }
 
 /* 技能の色。色だけに頼らず名前も出す */
@@ -448,55 +341,6 @@ button {
   height: 10px;
   border-radius: 2px;
   background: var(--skill, var(--rule-strong));
-}
-
-/* 切り替えスイッチ */
-.switch {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 44px;
-  cursor: pointer;
-}
-.switch input {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
-}
-.switch .track {
-  flex: none;
-  position: relative;
-  width: 48px;
-  height: 28px;
-  border-radius: 14px;
-  background: var(--rule);
-  border: 1px solid var(--rule-strong);
-  transition: background 0.15s;
-}
-.switch .track::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--surface);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
-  transition: transform 0.15s;
-}
-.switch input:checked + .track {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-.switch input:checked + .track::after {
-  transform: translateX(20px);
-}
-.switch input:focus-visible + .track {
-  outline: 3px solid var(--accent);
-  outline-offset: 2px;
 }
 
 /* その日のマーク */
@@ -1208,41 +1052,6 @@ button {
   font-size: 0.8125rem;
 }
 
-.week-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9375rem;
-}
-.week-table th,
-.week-table td {
-  text-align: left;
-  vertical-align: top;
-  padding: 8px 6px;
-  border-bottom: 1px solid var(--rule);
-}
-.week-table thead th {
-  font-size: 0.8125rem;
-  color: var(--ink-soft);
-  white-space: nowrap;
-}
-.week-table tbody th {
-  font-family: var(--font-heading);
-  width: 2.5em;
-}
-.week-table ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.week-table .num {
-  text-align: right;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-.nowrap {
-  white-space: nowrap;
-}
-
 .cp-list {
   list-style: none;
   margin: 0;
@@ -1371,4 +1180,132 @@ button {
 
 .update-banner {
   margin-bottom: 16px;
+}
+
+/* ---- 1日の記録 (10分のチェック) ---- */
+.log-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.log-row {
+  padding: 8px 0 12px 8px;
+  border-left: 4px solid var(--skill);
+  border-bottom: 1px dashed var(--rule);
+}
+.log-row:last-child {
+  border-bottom: none;
+}
+.log-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.log-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 4px 0 0;
+  border: none;
+  background: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+.log-name svg {
+  color: var(--ink-soft);
+}
+.log-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--skill);
+}
+.log-minutes {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+.log-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.unit-box,
+.unit-add {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid var(--rule-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: transparent;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.unit-box svg {
+  transform: scale(0.6);
+  transition: transform 0.15s;
+}
+.unit-box[aria-pressed='true'] {
+  background: var(--skill);
+  border-color: var(--skill);
+  color: #fff;
+}
+.unit-box[aria-pressed='true'] svg {
+  transform: scale(1);
+}
+.unit-add {
+  color: var(--ink-soft);
+  border-style: dashed;
+  font-size: 1.25rem;
+}
+.log-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+}
+.log-total strong {
+  font-size: 1.125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.skill-menus {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.skill-menus li {
+  display: flex;
+  flex-direction: column;
+  padding-left: 10px;
+  border-left: 4px solid var(--skill);
+}
+.skill-menus-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 16px;
+}
+.skill-menus-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+/* 幅の狭いスマホでも、6つのチェック (44px) が1行に収まるようにする */
+@media (max-width: 400px) {
+  .card {
+    padding: 14px 12px;
+  }
 }

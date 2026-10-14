@@ -2,8 +2,6 @@
 import { initializeApp } from 'firebase/app'
 import { GoogleAuthProvider, getAuth, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
 import {
-  arrayRemove,
-  arrayUnion,
   collection,
   deleteDoc,
   doc,
@@ -19,7 +17,7 @@ import {
 } from 'firebase/firestore'
 import { firebaseConfig } from '../firebase-config'
 import type { IsoDate } from '../plan/types'
-import { parseCheckpoint, parseDay, parseSettings } from './merge'
+import { isLegacyDay, parseCheckpoint, parseDay, parseSettings } from './merge'
 import type { CheckpointRecord, DayRecord, Records, Settings } from './types'
 
 const app = initializeApp(firebaseConfig)
@@ -70,8 +68,11 @@ export function subscribe(uid: string, h: CloudHandlers): () => void {
       (snap) => {
         const days: Records['days'] = {}
         snap.forEach((d) => {
-          const day = parseDay(d.data())
-          if (day) days[d.id] = day
+          const day = parseDay(d.data(), d.id)
+          if (!day) return
+          days[d.id] = day
+          // 旧版の形の記録は、新しい形に書き直す (1回だけ)
+          if (isLegacyDay(d.data())) setDoc(d.ref, day).catch(h.onError)
         })
         h.onDays(days)
         h.onPending('days', snap.metadata.hasPendingWrites)
@@ -114,7 +115,7 @@ export async function fetchAll(uid: string): Promise<{ records: Records; setting
   ])
   const records: Records = { days: {}, checkpoints: {} }
   daySnap.forEach((d) => {
-    const day = parseDay(d.data())
+    const day = parseDay(d.data(), d.id)
     if (day) records.days[d.id] = day
   })
   cpSnap.forEach((d) => {
@@ -128,9 +129,9 @@ export async function fetchAll(uid: string): Promise<{ records: Records; setting
 // ---- 書き込み ----
 // オフラインのときは端末の控えに書き、つながったら Firestore が送る。
 
-/** 完了の付け外しは1件ずつ足し引きして、別の端末の同時の変更を消さない */
-export function setDone(uid: string, date: IsoDate, taskId: string, isDone: boolean, updatedAt: number) {
-  return setDoc(dayDoc(uid, date), { done: isDone ? arrayUnion(taskId) : arrayRemove(taskId), updatedAt }, { merge: true })
+/** チェック数は分類ごとに書く (別の端末で別の分類を同時に変えても消し合わない) */
+export function setUnits(uid: string, date: IsoDate, skillId: string, count: number, updatedAt: number) {
+  return setDoc(dayDoc(uid, date), { units: { [skillId]: count }, updatedAt }, { merge: true })
 }
 
 export function setMemo(uid: string, date: IsoDate, day: DayRecord) {

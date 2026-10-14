@@ -2,7 +2,7 @@
 import type { CheckpointRecord, MemoKind, Records } from '../data/types'
 import type { IsoDate, Plan } from '../plan/types'
 import { addDays, dateOfTimestamp, weekStart } from './date'
-import { completedTasks, dayMark } from './marks'
+import { dayMark, minutesBySkillOf } from './marks'
 
 // ---- レベル ----
 
@@ -32,13 +32,11 @@ export function titleForLevel(plan: Plan, level: number): string {
 
 // ---- バッジ ----
 
-// バッジ ID の接頭辞ごとの判定。数値は ID の末尾 (hours-50 なら 50時間) から読む。
-const COUNTER_BADGES: Record<string, { taskId?: string; menuId?: string }> = {
-  eikaiwa: { taskId: 'eikaiwa' },
-  ai: { menuId: 'm5' },
-  policy: { menuId: 'm7' },
-  fun: { menuId: 'm8' },
-}
+// バッジ ID の形で判定を決める。数値は ID から読む
+//   hours-50        ボーナスを除く学習時間の合計が50時間
+//   speaking-10h    その分類の記録が累計10時間
+//   week-target(-4) 週の達成 (4週連続)
+//   phase-2         2番目のフェーズに入ってから記録した
 const CHECKPOINT_BADGES: Record<string, string> = {
   midterm: 'test-midterm',
   'mock-1': 'test-mock1',
@@ -58,10 +56,10 @@ export interface BadgeStatus {
 export interface Progress {
   /** ボーナスを除く学習時間 (分) */
   totalMinutes: number
-  /** 技能ごとの学習時間 (分)。技能のないタスクは含めない */
+  /** 分類ごとの学習時間 (分) */
   minutesBySkill: Record<string, number>
-  /** 完了したタスクの数 (葉の数) */
-  completedCount: number
+  /** チェックの数 (葉の数) */
+  checks: number
   /** ◎ の日 (花の数) */
   doubleDays: IsoDate[]
   /** 週の達成を満たした週の初日 */
@@ -83,13 +81,10 @@ export function computeProgress(plan: Plan, records: Records): Progress {
   const dates = Object.keys(records.days).sort()
 
   let totalMinutes = 0
-  let completedCount = 0
   const minutesBySkill: Record<string, number> = Object.fromEntries(plan.skills.map((s) => [s.id, 0]))
   const doubleDays: IsoDate[] = []
   const weeksMet: IsoDate[] = []
   const markedInWeek = new Map<IsoDate, number>()
-  const taskCount = new Map<string, number>()
-  const menuCount = new Map<string, number>()
 
   // 判定の途中経過から、各バッジの獲得日を記録する
   const earned = new Map<string, IsoDate>()
@@ -99,23 +94,19 @@ export function computeProgress(plan: Plan, records: Records): Progress {
   let firstCheck: IsoDate | null = null
   let firstDouble: IsoDate | null = null
   let streak = 0
-  let maxStreakDates: IsoDate[] = [] // 連続 n 週目を達成した日 (index = n-1)
+  let streakDates: IsoDate[] = [] // 連続 n 週目を初めて達成した日 (index = n-1)
 
   for (const date of dates) {
-    const done = records.days[date]!.done
-    const tasks = completedTasks(plan, date, done)
-    if (tasks.length === 0) continue
+    const units = records.days[date]!.units
+    const dayBySkill = minutesBySkillOf(plan, units)
+    const minutes = Object.values(dayBySkill).reduce((a, b) => a + b, 0)
+    if (minutes === 0) continue
 
     firstCheck ??= date
-    for (const t of tasks) {
-      totalMinutes += t.minutes
-      completedCount++
-      if (t.skill && t.skill in minutesBySkill) minutesBySkill[t.skill]! += t.minutes
-      taskCount.set(t.id, (taskCount.get(t.id) ?? 0) + 1)
-      if (t.menuId) menuCount.set(t.menuId, (menuCount.get(t.menuId) ?? 0) + 1)
-    }
+    totalMinutes += minutes
+    for (const [skill, m] of Object.entries(dayBySkill)) minutesBySkill[skill]! += m
 
-    const mark = dayMark(plan, date, done)
+    const mark = dayMark(plan, units)
     if (mark === 'double') {
       doubleDays.push(date)
       firstDouble ??= date
@@ -128,22 +119,23 @@ export function computeProgress(plan: Plan, records: Records): Progress {
         const prev = weeksMet[weeksMet.length - 1]
         streak = prev && addDays(prev, 7) === ws ? streak + 1 : 1
         weeksMet.push(ws)
-        if (streak > maxStreakDates.length) maxStreakDates = [...maxStreakDates, date]
+        if (streak > streakDates.length) streakDates = [...streakDates, date]
       }
     }
 
     // その日までの累計で決まるバッジ
     for (const badge of plan.gamification.badges) {
       if (earned.has(badge.id)) continue
+      const skillHours = /^(.+)-(\d+)h$/.exec(badge.id)
+      if (skillHours) {
+        if ((minutesBySkill[skillHours[1]!] ?? 0) >= Number(skillHours[2]) * 60) earn(badge.id, date)
+        continue
+      }
       const m = /^(.*)-(\d+)$/.exec(badge.id)
       const prefix = m?.[1]
       const num = m ? Number(m[2]) : NaN
       if (prefix === 'hours' && totalMinutes >= num * 60) earn(badge.id, date)
-      else if (prefix && COUNTER_BADGES[prefix]) {
-        const c = COUNTER_BADGES[prefix]
-        const count = c.taskId ? (taskCount.get(c.taskId) ?? 0) : (menuCount.get(c.menuId!) ?? 0)
-        if (count >= num) earn(badge.id, date)
-      } else if (prefix === 'phase') {
+      else if (prefix === 'phase') {
         const phase = plan.phases[num - 1]
         if (phase && date >= phase.start) earn(badge.id, date)
       }
@@ -162,10 +154,10 @@ export function computeProgress(plan: Plan, records: Records): Progress {
     let earnedOn: IsoDate | null = earned.get(b.id) ?? null
     if (b.id === 'first-check') earnedOn = firstCheck
     else if (b.id === 'first-double') earnedOn = firstDouble
-    else if (b.id === 'week-target') earnedOn = maxStreakDates[0] ?? null
+    else if (b.id === 'week-target') earnedOn = streakDates[0] ?? null
     else if (b.id.startsWith('week-target-')) {
       const n = Number(b.id.slice('week-target-'.length))
-      earnedOn = maxStreakDates[n - 1] ?? null
+      earnedOn = streakDates[n - 1] ?? null
     } else if (CHECKPOINT_BADGES[b.id]) {
       const rec = records.checkpoints[CHECKPOINT_BADGES[b.id]!]
       earnedOn = rec ? dateOfTimestamp(rec.enteredAt, tz) : null
@@ -176,7 +168,7 @@ export function computeProgress(plan: Plan, records: Records): Progress {
   return {
     totalMinutes,
     minutesBySkill,
-    completedCount,
+    checks: totalMinutes / plan.logging.unitMinutes,
     doubleDays,
     weeksMet,
     fruits,
@@ -191,24 +183,15 @@ export function computeProgress(plan: Plan, records: Records): Progress {
 
 // ---- コレクション ----
 
-/** plan.json の collections の ID と、メモの種類 (技能 ID) の対応 */
-export const COLLECTION_KINDS: Record<string, Exclude<MemoKind, null>> = {
-  'fun-titles': 'fun',
-  'policy-articles': 'policy',
-}
-
 export interface CollectionEntry {
   date: IsoDate
   memo: string
 }
 
-/** 楽しみ枠 (fun) か政策英語 (policy) を完了した日の1行メモ。新しい順 */
-export function collectionEntries(plan: Plan, records: Records, kind: Exclude<MemoKind, null>): CollectionEntry[] {
+/** 1行メモを「見た作品」(fun) や「読んだ政策記事」(policy) として残した日。新しい順 */
+export function collectionEntries(records: Records, kind: Exclude<MemoKind, null>): CollectionEntry[] {
   return Object.entries(records.days)
-    .filter(([date, day]) => {
-      if (day.memoKind !== kind || !day.memo.trim()) return false
-      return completedTasks(plan, date, day.done).some((t) => t.skill === kind)
-    })
+    .filter(([, day]) => day.memoKind === kind && day.memo.trim())
     .map(([date, day]) => ({ date, memo: day.memo.trim() }))
     .sort((a, b) => (a.date < b.date ? 1 : -1))
 }

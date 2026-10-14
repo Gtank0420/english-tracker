@@ -3,7 +3,7 @@ import { buildTree, type TreeData } from './Tree'
 
 const data = (over: Partial<TreeData> = {}): TreeData => ({
   xp: 3000,
-  minutesBySkill: { vocab: 800, listening: 700, speaking: 500, policy: 200, fun: 300, toefl: 0 },
+  minutesBySkill: { vocab: 800, listening: 700, speaking: 500, reading: 200, pronunciation: 300, toefl: 0 },
   leaves: 100,
   flowers: 20,
   fruits: 3,
@@ -29,7 +29,7 @@ describe('育つ木', () => {
   it('時間のない技能の枝は伸びない', () => {
     const t = buildTree(data())
     expect(t.branchInfo.find((b) => b.skill === 'toefl')!.length).toBe(0)
-    expect(t.branchInfo.find((b) => b.skill === 'vocab')!.length).toBeGreaterThan(t.branchInfo.find((b) => b.skill === 'policy')!.length)
+    expect(t.branchInfo.find((b) => b.skill === 'vocab')!.length).toBeGreaterThan(t.branchInfo.find((b) => b.skill === 'reading')!.length)
   })
   it('XP が増えると幹が伸びる (9,500XP 以降は最大)', () => {
     const h = (xp: number) => buildTree(data({ xp })).top.y

@@ -3,10 +3,13 @@
 export type IsoDate = string // "YYYY-MM-DD"
 export type WeekdayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'
 
+/** 記録の分類 (単語、リスニングなど) */
 export interface Skill {
   id: string
   name: string
   color: string
+  /** やり方を見るためのメニュー */
+  menuIds: string[]
 }
 
 export interface Phase {
@@ -21,17 +24,22 @@ export interface Phase {
 export interface MarkRules {
   circle: string
   doubleCircle: string
+  /** その日の合計がこの分数以上で ○ */
+  circleMinutes: number
+  /** その日の合計がこの分数以上で ◎ */
+  doubleCircleMinutes: number
   weekTargetDays: number
   weekStartsOn: WeekdayKey
   note: string
 }
 
-export interface MinimumTask {
-  id: string
-  label: string
-  minutes: number
-  skill: string
-  menuId: string | null
+/** 記録のしかた */
+export interface Logging {
+  /** 1チェックの分数 */
+  unitMinutes: number
+  /** 分類ごとに最初に並べるチェックの数 */
+  initialBoxes: number
+  note: string
 }
 
 export interface Menu {
@@ -52,23 +60,6 @@ export interface Menu {
   topicsByPhase?: Record<string, string>
   materialIds: string[]
   copyTextIds: string[]
-}
-
-export interface ScheduleTask {
-  id: string
-  menuId: string | null
-  label: string
-  minutes: number
-  optional?: boolean
-  replacedOnMockDay?: boolean
-}
-
-export type WeekSchedule = Record<WeekdayKey, ScheduleTask[]>
-
-export interface SpecialDay {
-  date: IsoDate
-  replaceTaskIds: string[]
-  addTasks: ScheduleTask[]
 }
 
 export type MaterialType = 'book' | 'app' | 'podcast' | 'video' | 'youtube' | 'website' | 'ai' | 'lesson'
@@ -147,6 +138,8 @@ export interface Badge {
 export interface Collection {
   id: string
   name: string
+  /** 1行メモの種類 (memoKind) */
+  kind: 'fun' | 'policy'
   source: string
 }
 
@@ -177,10 +170,8 @@ export interface Plan {
   skills: Skill[]
   phases: Phase[]
   markRules: MarkRules
-  minimumTasks: MinimumTask[]
+  logging: Logging
   menus: Menu[]
-  schedule: Record<string, WeekSchedule>
-  specialDays: SpecialDay[]
   materials: Material[]
   levelTable: LevelRow[]
   checkpoints: Checkpoint[]
